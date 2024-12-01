@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="EMPTY_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/day-01/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-02/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-03/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-04/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-05/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-06/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-07/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-08/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-09/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-10/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-11/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-12/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-13/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-14/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-15/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-16/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-17/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-18/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-19/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-20/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-21/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-22/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-23/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-24/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/day-25/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/runner/benches" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/runner/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/shared/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

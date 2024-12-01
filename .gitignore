@@ -1,0 +1,9 @@
+/target/debug/**
+/target/release/**
+/target/tmp/**
+/target/.future-incompat-report.json
+/target/.rustc_info.json
+/target/CACHEDIR.TAG
+*.txt
+*/*.txt
+.DS_Store
