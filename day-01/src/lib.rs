@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use shared::parse::Parsable;
 use shared::*;
@@ -24,18 +24,10 @@ fn solve_1(left: &mut Vec<u16>, right: &mut Vec<u16>) -> u32 {
     left.sort_unstable();
     right.sort_unstable();
 
-    let mut sum: u32 = 0;
-
-    let mut left_iter = left.iter();
-    let mut right_iter = right.iter();
-
-    while let Some(left_number) = left_iter.next() {
-        if let Some(right_number) = right_iter.next() {
-            sum += left_number.abs_diff(*right_number) as u32;
-        }
-    }
-
-    sum
+    left.iter()
+        .zip(right.iter())
+        .map(|(l, r)| l.abs_diff(*r) as u32)
+        .sum()
 }
 
 pub fn part_1(_input: &str) -> Solution {
