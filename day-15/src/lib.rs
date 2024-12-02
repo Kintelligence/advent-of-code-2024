@@ -21,7 +21,7 @@ mod part_1_tests {
 
     #[test]
     fn real_input() {
-        assert_eq!(part_1(_INPUT), None.into());
+        assert_eq!(part_1(_INPUT), Solution::None);
     }
 }
 
@@ -41,6 +41,6 @@ mod part_2_tests {
 
     #[test]
     fn real_input() {
-        assert_eq!(part_2(_INPUT), None.into());
+        assert_eq!(part_2(_INPUT), Solution::None);
     }
 }

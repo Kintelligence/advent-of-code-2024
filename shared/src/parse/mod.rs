@@ -112,6 +112,7 @@ macro_rules! parsable_float_number {
     };
 }
 
+parsable_number!(u8);
 parsable_number!(u16);
 parsable_number!(u32);
 parsable_number!(u64);
@@ -119,6 +120,7 @@ parsable_number!(u128);
 parsable_number!(usize);
 parsable_float_number!(f32);
 parsable_float_number!(f64);
+parsable_negative_number!(i8);
 parsable_negative_number!(i16);
 parsable_negative_number!(i32);
 parsable_negative_number!(i64);
