@@ -1,4 +1,3 @@
-use shared::parse::Parsable;
 use shared::*;
 
 extern crate shared;
