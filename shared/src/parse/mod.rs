@@ -13,6 +13,7 @@ impl ToDigit for u8 {
 
 pub trait Parsable<T>: Iterator {
     fn next_number(&mut self) -> Option<T>;
+    fn next_number_strict(&mut self) -> (Option<T>, Option<u8>);
 }
 
 macro_rules! parsable_number {
@@ -33,6 +34,22 @@ macro_rules! parsable_number {
                 }
 
                 value
+            }
+            fn next_number_strict(&mut self) -> (Option<$type>, Option<u8>) {
+                let mut value: Option<$type> = None;
+                for byte in self {
+                    if let Some(digit) = byte.to_digit() {
+                        if let Some(current) = value {
+                            value = Some(current * 10 + digit as $type);
+                        } else {
+                            value = Some(digit as $type);
+                        }
+                    } else {
+                        return (value, Some(byte));
+                    }
+                }
+
+                (value, None)
             }
         }
     };
@@ -71,6 +88,36 @@ macro_rules! parsable_negative_number {
                 }
                 None
             }
+            fn next_number_strict(&mut self) -> (Option<$type>, Option<u8>) {
+                let mut negative = false;
+                let mut value: Option<$type> = None;
+                for byte in self {
+                    if let Some(digit) = byte.to_digit() {
+                        if let Some(current) = value {
+                            value = Some(current * 10 + digit as $type);
+                        } else {
+                            value = Some(digit as $type);
+                        }
+                    } else if byte == b'-' {
+                        negative = true;
+                    } else if let Some(value) = value {
+                        if negative {
+                            return (Some(-value), Some(byte));
+                        }
+                        return (Some(value), Some(byte));
+                    } else {
+                        return (None, Some(byte));
+                    }
+                }
+
+                if let Some(value) = value {
+                    if negative {
+                        return (Some(-value), None);
+                    }
+                    return (Some(value), None);
+                }
+                (None, None)
+            }
         }
     };
 }
@@ -107,6 +154,36 @@ macro_rules! parsable_float_number {
                     return Some(value);
                 }
                 None
+            }
+            fn next_number_strict(&mut self) -> (Option<$type>, Option<u8>) {
+                let mut negative = false;
+                let mut value: Option<$type> = None;
+                for byte in self {
+                    if let Some(digit) = byte.to_digit() {
+                        if let Some(current) = value {
+                            value = Some(current * 10.0 + digit as $type);
+                        } else {
+                            value = Some(digit as $type);
+                        }
+                    } else if byte == b'-' {
+                        negative = true;
+                    } else if let Some(value) = value {
+                        if negative {
+                            return (Some(-value), Some(byte));
+                        }
+                        return (Some(value), Some(byte));
+                    } else {
+                        return (None, Some(byte));
+                    }
+                }
+
+                if let Some(value) = value {
+                    if negative {
+                        return (Some(-value), None);
+                    }
+                    return (Some(value), None);
+                }
+                (None, None)
             }
         }
     };

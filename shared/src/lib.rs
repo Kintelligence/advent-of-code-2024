@@ -126,7 +126,7 @@ pub fn day_name(day: u32) -> &'static str {
     match day {
         1 => "Historian Hysteria",
         2 => "Red-Nosed Reports",
-        3 => "Unnamed",
+        3 => "Mull It Over",
         4 => "Unnamed",
         5 => "Unnamed",
         6 => "Unnamed",
