@@ -80,9 +80,9 @@ mod part_1_tests {
         assert_eq!(part_1(input), expected.into());
     }
 
-    #[test]
-    fn real_input() {
-        assert_eq!(part_1(_INPUT), (181345830 as usize).into());
+    #[test_case(181345830)]
+    fn real_input(expected: usize) {
+        assert_eq!(part_1(_INPUT), expected.into());
     }
 }
 
@@ -132,8 +132,8 @@ mod part_2_tests {
         assert_eq!(part_2(input), expected.into());
     }
 
-    #[test]
-    fn real_input() {
-        assert_eq!(part_2(_INPUT), (98729041 as usize).into());
+    #[test_case(98729041)]
+    fn real_input(expected: usize) {
+        assert_eq!(part_2(_INPUT), expected.into());
     }
 }

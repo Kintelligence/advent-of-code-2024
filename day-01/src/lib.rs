@@ -20,13 +20,13 @@ fn parse(input: &str) -> (Vec<u16>, Vec<u16>) {
     (left, right)
 }
 
-fn solve_1(left: &mut Vec<u16>, right: &mut Vec<u16>) -> u32 {
+fn solve_1(left: &mut Vec<u16>, right: &mut Vec<u16>) -> usize {
     left.sort_unstable();
     right.sort_unstable();
 
     left.iter()
         .zip(right.iter())
-        .map(|(l, r)| l.abs_diff(*r) as u32)
+        .map(|(l, r)| l.abs_diff(*r) as usize)
         .sum()
 }
 
@@ -41,17 +41,17 @@ mod part_1_tests {
     use test_case::test_case;
 
     #[test_case(include_str!("_test.txt"), 11)]
-    fn example_input(input: &str, expected: u16) {
+    fn example_input(input: &str, expected: usize) {
         assert_eq!(part_1(input), expected.into());
     }
 
-    #[test]
-    fn real_input() {
-        assert_eq!(part_1(_INPUT), 2756096.into());
+    #[test_case(2756096)]
+    fn real_input(expected: usize) {
+        assert_eq!(part_1(_INPUT), expected.into());
     }
 }
 
-fn solve_2(left: &mut Vec<u16>, right: &mut Vec<u16>) -> u32 {
+fn solve_2(left: &mut Vec<u16>, right: &mut Vec<u16>) -> usize {
     let mut hash = HashMap::new();
     for n in left {
         if let Some(i) = hash.get(&n) {
@@ -61,10 +61,10 @@ fn solve_2(left: &mut Vec<u16>, right: &mut Vec<u16>) -> u32 {
         }
     }
 
-    let mut sum: u32 = 0;
+    let mut sum: usize = 0;
     for n in right {
         if let Some(i) = hash.get(&n) {
-            sum += i * *n as u32;
+            sum += i * *n as usize;
         }
     }
 
@@ -82,12 +82,12 @@ mod part_2_tests {
     use test_case::test_case;
 
     #[test_case(include_str!("_test.txt"), 31)]
-    fn example_input(input: &str, expected: u16) {
+    fn example_input(input: &str, expected: usize) {
         assert_eq!(part_2(input), expected.into());
     }
 
-    #[test]
-    fn real_input() {
-        assert_eq!(part_2(_INPUT), 23117829.into());
+    #[test_case(23117829)]
+    fn real_input(expected: usize) {
+        assert_eq!(part_2(_INPUT), expected.into());
     }
 }
