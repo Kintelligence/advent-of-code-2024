@@ -1,5 +1,4 @@
 use core::fmt;
-use std::iter::Map;
 
 pub struct Vec2d<T> {
     pub vec: Vec<T>,
