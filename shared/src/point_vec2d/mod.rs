@@ -33,7 +33,42 @@ pub enum Direction {
     West,
 }
 
-#[derive(Clone)]
+impl Direction {
+    pub fn rotate_clockwise(&self) -> Self {
+        match self {
+            Direction::North => Self::East,
+            Direction::East => Self::South,
+            Direction::South => Self::West,
+            Direction::West => Self::North,
+        }
+    }
+
+    pub fn rotate_counterclockwise(&self) -> Self {
+        match self {
+            Direction::North => Self::West,
+            Direction::East => Self::North,
+            Direction::South => Self::East,
+            Direction::West => Self::South,
+        }
+    }
+
+    pub fn reverse(&self) -> Self {
+        match self {
+            Direction::North => Self::South,
+            Direction::East => Self::West,
+            Direction::South => Self::North,
+            Direction::West => Self::East,
+        }
+    }
+}
+
+impl From<Direction> for usize {
+    fn from(value: Direction) -> Self {
+        value as usize
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct PointVec2d<T> {
     pub vec: Vec<T>,
     pub width: usize,
