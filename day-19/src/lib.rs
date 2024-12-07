@@ -18,9 +18,9 @@ mod part_1_tests {
         assert_eq!(part_1(input), expected.into());
     }
 
-    #[test]
-    fn real_input() {
-        assert_eq!(part_1(_INPUT), Solution::None);
+    #[test_case(0)]
+    fn real_input(expected: usize) {
+        assert_eq!(part_1(_INPUT), expected.into());
     }
 }
 
@@ -38,8 +38,8 @@ mod part_2_tests {
         assert_eq!(part_2(input), expected.into());
     }
 
-    #[test]
-    fn real_input() {
-        assert_eq!(part_2(_INPUT), Solution::None);
+    #[test_case(0)]
+    fn real_input(expected: usize) {
+        assert_eq!(part_2(_INPUT), expected.into());
     }
 }
