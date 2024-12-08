@@ -44,16 +44,22 @@ pub fn part_1(_input: &str) -> Solution {
     let mut antinodes: usize = 0;
 
     for set in sets {
-        for i in 0..set.len() {
+        for i in 0..(set.len() - 1) {
             let current = set[i];
 
-            for n in 0..set.len() {
-                if n == i {
-                    continue;
-                }
-
+            for n in (i + 1)..set.len() {
                 let other = set[n];
                 if let Some(offset) = current.checked_sub(other) {
+                    if let Some(antinode) = other.checked_sub(offset) {
+                        if let Some(point) = Point::from(antinode) {
+                            if map.is_within_bounds(point) {
+                                if !map[point] {
+                                    map.insert(point, true);
+                                    antinodes += 1;
+                                }
+                            }
+                        }
+                    }
                     if let Some(antinode) = current.checked_add(offset) {
                         if let Some(point) = Point::from(antinode) {
                             if map.is_within_bounds(point) {
@@ -94,14 +100,16 @@ pub fn part_2(_input: &str) -> Solution {
     let mut antinodes: usize = 0;
 
     for set in sets {
-        for i in 0..set.len() {
+        for i in 0..(set.len() - 1) {
             let current = set[i];
-
-            for n in 0..set.len() {
-                if n == i {
-                    continue;
+            if let Some(current_point) = Point::from(current) {
+                if !map[current_point] {
+                    map.insert(current_point, true);
+                    antinodes += 1;
                 }
+            }
 
+            for n in (i + 1)..set.len() {
                 let other = set[n];
                 if let Some(other_point) = Point::from(other) {
                     if !map[other_point] {
@@ -114,6 +122,22 @@ pub fn part_2(_input: &str) -> Solution {
                     let mut point = current;
                     loop {
                         if let Some(antinode) = point.checked_add(offset) {
+                            if let Some(antinode_point) = Point::from(antinode) {
+                                if map.is_within_bounds(antinode_point) {
+                                    if !map[antinode_point] {
+                                        map.insert(antinode_point, true);
+                                        antinodes += 1;
+                                    }
+                                    point = antinode;
+                                    continue;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    point = other;
+                    loop {
+                        if let Some(antinode) = point.checked_sub(offset) {
                             if let Some(antinode_point) = Point::from(antinode) {
                                 if map.is_within_bounds(antinode_point) {
                                     if !map[antinode_point] {
