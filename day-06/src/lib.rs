@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
-use point_vec2d::{Direction, Point, PointVec2d};
+use point::Point;
+use point_vec2d::{Direction, PointVec2d};
 use shared::*;
 
 extern crate shared;

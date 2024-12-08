@@ -1,22 +1,6 @@
 use core::fmt;
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, PartialOrd, Ord, Hash)]
-pub struct Point {
-    pub x: usize,
-    pub y: usize,
-}
-
-impl std::fmt::Display for Point {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({},{})", self.x, self.y)
-    }
-}
-
-impl Point {
-    pub fn new(x: usize, y: usize) -> Self {
-        Point { x, y }
-    }
-}
+use crate::point::Point;
 
 pub const DIRECTIONS: [Direction; 4] = [
     Direction::North,
@@ -98,6 +82,19 @@ impl<T> PointVec2d<T> {
 
     pub fn index_mut(&mut self, point: Point) -> &mut T {
         &mut self.vec[self.width * point.y + point.x]
+    }
+
+    pub fn is_within_bounds(&mut self, point: Point) -> bool {
+        return point.x < self.width && point.y < self.height;
+    }
+
+    pub fn insert(&mut self, point: Point, value: T) -> bool {
+        if self.is_within_bounds(point) {
+            self.vec[self.width * point.y + point.x] = value;
+
+            return true;
+        }
+        false
     }
 
     pub fn go(&self, point: Point, direction: Direction) -> Option<Point> {
@@ -196,7 +193,7 @@ impl<T> std::ops::IndexMut<Point> for PointVec2d<T> {
     }
 }
 
-impl<T: std::fmt::Debug> std::fmt::Display for PointVec2d<T> {
+default impl<T: std::fmt::Debug> std::fmt::Display for PointVec2d<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut str = String::new();
         for i in 0..self.height {
@@ -206,6 +203,25 @@ impl<T: std::fmt::Debug> std::fmt::Display for PointVec2d<T> {
             }
             str.push('\n');
         }
+        write!(f, "{}", str)
+    }
+}
+
+impl std::fmt::Display for PointVec2d<bool> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut str = String::new();
+        for y in 0..self.height {
+            for x in 0..self.width {
+                str.push_str(if *self.index(Point::new(x, y)) {
+                    "■ "
+                } else {
+                    ". "
+                });
+            }
+
+            str.push('\n');
+        }
+        str.push('\n');
         write!(f, "{}", str)
     }
 }

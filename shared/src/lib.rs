@@ -1,3 +1,5 @@
+#![feature(specialization)]
+
 use std::{
     fmt::{Display, Formatter},
     time::{Duration, Instant},
@@ -151,6 +153,8 @@ pub fn day_name(day: u32) -> &'static str {
     }
 }
 
+pub mod ipoint;
 pub mod parse;
+pub mod point;
 pub mod point_vec2d;
 pub mod vec2d;
