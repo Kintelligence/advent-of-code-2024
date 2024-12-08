@@ -7,7 +7,7 @@ extern crate shared;
 
 pub const _INPUT: &'static str = include_str!("_input.txt");
 
-fn parse(input: &str) -> (Vec<u16>, Vec<u16>) {
+fn parse(input: &str) -> (Vec<u32>, Vec<u32>) {
     let mut left = Vec::new();
     let mut right = Vec::new();
 
@@ -20,7 +20,7 @@ fn parse(input: &str) -> (Vec<u16>, Vec<u16>) {
     (left, right)
 }
 
-fn solve_1(left: &mut Vec<u16>, right: &mut Vec<u16>) -> usize {
+fn solve_1(left: &mut Vec<u32>, right: &mut Vec<u32>) -> usize {
     left.sort_unstable();
     right.sort_unstable();
 
@@ -51,7 +51,7 @@ mod part_1_tests {
     }
 }
 
-fn solve_2(left: &mut Vec<u16>, right: &mut Vec<u16>) -> usize {
+fn solve_2(left: &mut Vec<u32>, right: &mut Vec<u32>) -> usize {
     let mut hash = HashMap::new();
     for n in left {
         if let Some(i) = hash.get(&n) {

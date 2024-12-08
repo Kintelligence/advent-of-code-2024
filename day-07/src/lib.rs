@@ -70,7 +70,7 @@ mod part_1_tests {
         assert_eq!(part_1(input), expected.into());
     }
 
-    #[test_case(0)]
+    #[test_case(4364915411363)]
     fn real_input(expected: u64) {
         assert_eq!(part_1(_INPUT), expected.into());
     }
@@ -149,7 +149,7 @@ mod part_2_tests {
         assert_eq!(part_2(input), expected.into());
     }
 
-    #[test_case(0)]
+    #[test_case(38322057216320)]
     fn real_input(expected: u64) {
         assert_eq!(part_2(_INPUT), expected.into());
     }
