@@ -67,22 +67,13 @@ pub fn part_1(_input: &str) -> Solution {
                 position += min;
 
                 if remaining == 0 {
-                    back_i -= 1;
+                    back_i -= 2;
                     if back_i <= i {
                         break;
                     }
                     if let Block::File(size, id) = blocks[back_i] {
                         fill_id = id;
                         remaining = size;
-                    } else {
-                        back_i -= 1;
-                        if back_i <= i {
-                            break;
-                        }
-                        if let Block::File(size, id) = blocks[back_i] {
-                            fill_id = id;
-                            remaining = size;
-                        }
                     }
                 }
             }
