@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 use parse::ToDigit;
 use shared::*;
 
@@ -12,21 +10,21 @@ enum Block {
     File(usize, usize),
 }
 
-fn parse(input: &str) -> VecDeque<Block> {
-    let mut vec = VecDeque::new();
+fn parse(input: &str) -> Vec<Block> {
+    let mut vec = Vec::new();
     let mut next_id = 0;
 
     let mut bytes = input.bytes();
 
     while let Some(file_byte) = bytes.next() {
         if let Some(size) = file_byte.to_digit() {
-            vec.push_back(Block::File(size as usize, next_id));
+            vec.push(Block::File(size as usize, next_id));
             next_id += 1;
         }
 
         if let Some(empty_byte) = bytes.next() {
             if let Some(size) = empty_byte.to_digit() {
-                vec.push_back(Block::Empty(size as usize));
+                vec.push(Block::Empty(size as usize));
             }
         }
     }
@@ -35,44 +33,55 @@ fn parse(input: &str) -> VecDeque<Block> {
 }
 
 pub fn part_1(_input: &str) -> Solution {
-    let mut blocks = parse(_input);
+    let blocks = parse(_input);
     let mut result: usize = 0;
+
+    let mut back_i = blocks.len() - 1;
 
     let mut position = 0;
     let mut fill_id = 0;
     let mut remaining = 0;
 
-    if let Some(back) = blocks.pop_back() {
-        if let Block::File(size, id) = back {
-            fill_id = id;
-            remaining = size;
-        }
+    if let Block::File(size, id) = blocks[back_i] {
+        fill_id = id;
+        remaining = size;
     }
 
-    while let Some(front) = blocks.pop_front() {
+    for i in 0..blocks.len() {
+        if i >= back_i {
+            break;
+        }
+
+        let front = &blocks[i];
         if let Block::File(size, id) = front {
-            for _ in 0..size {
-                result += position * id;
-                position += 1;
-            }
+            result += id * (position * 2 + size - 1) * size / 2;
+            position += size;
         } else if let Block::Empty(size) = front {
-            for _ in 0..size {
-                result += position * fill_id;
-                position += 1;
-                remaining -= 1;
+            let mut hole = *size;
+
+            while hole > 0 {
+                let min = usize::min(hole, remaining);
+                hole -= min;
+                remaining -= min;
+                result += fill_id * (position * 2 + min - 1) * min / 2;
+                position += min;
 
                 if remaining == 0 {
-                    if let Some(back) = blocks.pop_back() {
-                        if let Block::File(size, id) = back {
+                    back_i -= 1;
+                    if back_i <= i {
+                        break;
+                    }
+                    if let Block::File(size, id) = blocks[back_i] {
+                        fill_id = id;
+                        remaining = size;
+                    } else {
+                        back_i -= 1;
+                        if back_i <= i {
+                            break;
+                        }
+                        if let Block::File(size, id) = blocks[back_i] {
                             fill_id = id;
                             remaining = size;
-                        } else {
-                            if let Some(back) = blocks.pop_back() {
-                                if let Block::File(size, id) = back {
-                                    fill_id = id;
-                                    remaining = size;
-                                }
-                            }
                         }
                     }
                 }
@@ -98,7 +107,7 @@ mod part_1_tests {
         assert_eq!(part_1(input), expected.into());
     }
 
-    #[test_case(0)]
+    #[test_case(6283404590840)]
     fn real_input(expected: usize) {
         assert_eq!(part_1(_INPUT), expected.into());
     }
@@ -134,24 +143,21 @@ pub fn part_2(_input: &str) -> Solution {
         }
     }
 
-    files.reverse();
-
     let mut result: usize = 0;
 
-    for file in files {
+    let mut cache: [usize; 10] = [0; 10];
+
+    for file in files.iter().rev() {
         let mut found = false;
-        for i in 0..spaces.len() {
+        for i in cache[file.size]..spaces.len() {
             if spaces[i].offset < file.offset {
                 if spaces[i].size >= file.size {
                     let offset = spaces[i].offset;
                     result += file.id * (offset * 2 + file.size - 1) * file.size / 2;
 
-                    if spaces[i].size == file.size {
-                        spaces.remove(i);
-                    } else {
-                        spaces[i].size -= file.size;
-                        spaces[i].offset += file.size;
-                    }
+                    spaces[i].size -= file.size;
+                    spaces[i].offset += file.size;
+                    cache[file.size] = i;
 
                     found = true;
                     break;
@@ -163,6 +169,7 @@ pub fn part_2(_input: &str) -> Solution {
 
         if !found {
             result += file.id * (file.offset * 2 + file.size - 1) * file.size / 2;
+            cache[file.size] = usize::MAX;
         }
     }
 
