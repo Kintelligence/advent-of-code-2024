@@ -120,7 +120,6 @@ struct Space {
 pub fn part_2(_input: &str) -> Solution {
     let blocks = parse(_input);
     let mut offset = 0;
-
     let mut files = Vec::new();
     let mut spaces = Vec::new();
 
@@ -135,25 +134,18 @@ pub fn part_2(_input: &str) -> Solution {
     }
 
     let mut result: usize = 0;
-
     let mut cache: [usize; 10] = [0; 10];
 
     for file in files.iter().rev() {
         let mut found = false;
-        for i in cache[file.size]..spaces.len() {
-            if spaces[i].offset < file.offset {
-                if spaces[i].size >= file.size {
-                    let offset = spaces[i].offset;
-                    result += file.id * (offset * 2 + file.size - 1) * file.size / 2;
-
-                    spaces[i].size -= file.size;
-                    spaces[i].offset += file.size;
-                    cache[file.size] = i;
-
-                    found = true;
-                    break;
-                }
-            } else {
+        for i in cache[file.size]..file.id {
+            if spaces[i].size >= file.size {
+                let offset = spaces[i].offset;
+                result += file.id * (offset * 2 + file.size - 1) * file.size / 2;
+                spaces[i].size -= file.size;
+                spaces[i].offset += file.size;
+                cache[file.size] = i;
+                found = true;
                 break;
             }
         }
