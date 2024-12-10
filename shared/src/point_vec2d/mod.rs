@@ -72,6 +72,14 @@ impl<T> PointVec2d<T> {
         Self { vec, width, height }
     }
 
+    pub fn overwrite(&mut self, vec: Vec<T>) -> bool {
+        if self.vec.len() == vec.len() {
+            self.vec = vec;
+            return true;
+        }
+        false
+    }
+
     pub fn row(&self, y: usize) -> &[T] {
         &self.vec[self.width * y..(self.width * y + self.width)]
     }
@@ -138,8 +146,17 @@ impl<T> PointVec2d<T> {
         Some(Point::new(point.x - 1, point.y))
     }
 
-    pub fn adjacent(&self, point: Point) -> Adjecent {
-        Adjecent {
+    pub fn positions(&self) -> Positions {
+        Positions {
+            height: self.height,
+            width: self.width,
+            x: 0,
+            y: 0,
+        }
+    }
+
+    pub fn adjacent_eight(&self, point: Point) -> AdjecentEight {
+        AdjecentEight {
             x: point.x,
             y: point.y,
             height: self.height,
@@ -148,8 +165,8 @@ impl<T> PointVec2d<T> {
         }
     }
 
-    pub fn neighbours(&self, point: Point) -> Neighbours {
-        Neighbours {
+    pub fn adjacent_four(&self, point: Point) -> AdjacentFour {
+        AdjacentFour {
             x: point.x,
             y: point.y,
             height: self.height,
@@ -158,13 +175,28 @@ impl<T> PointVec2d<T> {
         }
     }
 
-    pub fn neighbours_directional(&self, point: Point) -> NeighboursDirectional {
-        NeighboursDirectional {
+    pub fn adjacent_four_directional(&self, point: Point) -> AdjacentFourDirectional {
+        AdjacentFourDirectional {
             x: point.x,
             y: point.y,
             height: self.height,
             width: self.width,
             current: 0,
+        }
+    }
+
+    pub fn adjacent_three_directional(
+        &self,
+        point: Point,
+        from: Direction,
+    ) -> AdjacentThreeDirectional {
+        AdjacentThreeDirectional {
+            x: point.x,
+            y: point.y,
+            height: self.height,
+            width: self.width,
+            current: 0,
+            direction: from,
         }
     }
 
@@ -226,6 +258,33 @@ impl std::fmt::Display for PointVec2d<bool> {
     }
 }
 
+pub struct Positions {
+    height: usize,
+    width: usize,
+    x: usize,
+    y: usize,
+}
+
+impl Iterator for Positions {
+    type Item = Point;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.x >= self.width {
+            self.x = 0;
+            self.y += 1;
+        }
+
+        if self.y >= self.height {
+            return None;
+        }
+
+        let point = Point::new(self.x, self.y);
+        self.x += 1;
+
+        return Some(point);
+    }
+}
+
 pub const ADJ_EIGHT: [(isize, isize); 8] = [
     (-1, 1),
     (-1, 0),
@@ -237,7 +296,7 @@ pub const ADJ_EIGHT: [(isize, isize); 8] = [
     (1, -1),
 ];
 
-pub struct Adjecent {
+pub struct AdjecentEight {
     x: usize,
     y: usize,
     height: usize,
@@ -245,7 +304,7 @@ pub struct Adjecent {
     current: usize,
 }
 
-impl Iterator for Adjecent {
+impl Iterator for AdjecentEight {
     type Item = Point;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -270,7 +329,7 @@ impl Iterator for Adjecent {
 
 pub const ADJ_FOUR: [(isize, isize); 4] = [(-1, 0), (0, -1), (0, 1), (1, 0)];
 
-pub struct Neighbours {
+pub struct AdjacentFour {
     x: usize,
     y: usize,
     height: usize,
@@ -278,7 +337,7 @@ pub struct Neighbours {
     current: usize,
 }
 
-impl Iterator for Neighbours {
+impl Iterator for AdjacentFour {
     type Item = Point;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -301,7 +360,40 @@ impl Iterator for Neighbours {
     }
 }
 
-pub struct NeighboursDirectional {
+pub struct AdjacentThreeDirectional {
+    x: usize,
+    y: usize,
+    height: usize,
+    width: usize,
+    current: usize,
+    direction: Direction,
+}
+
+impl Iterator for AdjacentThreeDirectional {
+    type Item = (Point, Direction);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if self.current > 3 {
+                return None;
+            }
+
+            let nx = self.x as isize + ADJ_FOUR[self.current].0;
+            let ny = self.y as isize + ADJ_FOUR[self.current].1;
+            self.direction = self.direction.rotate_clockwise();
+
+            self.current += 1;
+
+            if nx < 0 || nx >= self.width as isize || ny < 0 || ny >= self.height as isize {
+                continue;
+            }
+
+            return Some((Point::new(nx as usize, ny as usize), self.direction));
+        }
+    }
+}
+
+pub struct AdjacentFourDirectional {
     x: usize,
     y: usize,
     height: usize,
@@ -309,7 +401,7 @@ pub struct NeighboursDirectional {
     current: usize,
 }
 
-impl Iterator for NeighboursDirectional {
+impl Iterator for AdjacentFourDirectional {
     type Item = (Point, Direction);
 
     fn next(&mut self) -> Option<Self::Item> {
