@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::iter::from_fn;
 
 use parse::Parsable;
 use shared::*;
@@ -7,74 +7,8 @@ extern crate shared;
 
 pub const _INPUT: &'static str = include_str!("_input.txt");
 
-#[derive(Debug)]
-struct Rule {
-    x: u8,
-    y: u8,
-}
-
-impl Rule {
-    pub fn parse(input: &str) -> Self {
-        let mut bytes = input.bytes();
-        Rule {
-            x: bytes.next_number().unwrap(),
-            y: bytes.next_number().unwrap(),
-        }
-    }
-}
-
-#[derive(Debug)]
-struct Update {
-    pages: Vec<u8>,
-    map: HashMap<u8, u8>,
-}
-
-impl Update {
-    pub fn parse(input: &str) -> Self {
-        let mut bytes = input.bytes();
-        let mut pages = Vec::new();
-        let mut map = HashMap::new();
-
-        let mut i = 0;
-        while let Some(page) = bytes.next_number() {
-            pages.push(page);
-            map.insert(page, i);
-            i += 1;
-        }
-
-        Update { pages, map }
-    }
-
-    pub fn validate_rule(&self, rule: &Rule) -> Option<bool> {
-        if let Some(x) = self.map.get(&rule.x) {
-            if let Some(y) = self.map.get(&rule.y) {
-                return Some(y > x);
-            }
-        }
-
-        None
-    }
-
-    pub fn validate_rules(&self, rules: &Vec<Rule>) -> bool {
-        for rule in rules {
-            if let Some(validation) = self.validate_rule(&rule) {
-                if !validation {
-                    return false;
-                }
-            }
-        }
-
-        true
-    }
-}
-
-fn mid_page(vec: &Vec<u8>) -> u8 {
-    let mid = (vec.len() - 1) / 2;
-    vec[mid]
-}
-
-fn parse(input: &str) -> (Vec<Rule>, Vec<Update>) {
-    let mut rules = Vec::new();
+fn parse(input: &str) -> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
+    let mut rules = vec![Vec::new(); 100];
     let mut updates = Vec::new();
 
     let mut line_iter = input.lines().into_iter();
@@ -83,26 +17,37 @@ fn parse(input: &str) -> (Vec<Rule>, Vec<Update>) {
         if line.is_empty() {
             break;
         }
-        rules.push(Rule::parse(line));
+        let mut bytes = line.bytes();
+        let x: usize = bytes.next_number().unwrap();
+        let y: usize = bytes.next_number().unwrap();
+        rules[x].push(y);
     }
 
     while let Some(line) = line_iter.next() {
-        updates.push(Update::parse(line));
+        let mut bytes = line.bytes();
+        updates.push(from_fn(|| bytes.next_number()).collect());
     }
 
     (rules, updates)
 }
 
-pub fn part_1(_input: &str) -> Solution {
-    let (rules, updates) = parse(_input);
-    let mut sum: usize = 0;
-    for update in updates {
-        if update.validate_rules(&rules) {
-            sum += mid_page(&update.pages) as usize;
+fn check_1(update: &Vec<usize>, rules: &Vec<Vec<usize>>) -> Option<usize> {
+    for i in 0..update.len() - 1 {
+        if !rules[update[i]].contains(&update[i + 1]) {
+            return None;
         }
     }
+    let mid = (update.len() - 1) / 2;
+    Some(update[mid])
+}
 
-    sum.into()
+pub fn part_1(_input: &str) -> Solution {
+    let (rules, updates) = parse(_input);
+    updates
+        .iter()
+        .filter_map(|update| check_1(update, &rules))
+        .sum::<usize>()
+        .into()
 }
 
 #[cfg(test)]
@@ -121,124 +66,46 @@ mod part_1_tests {
     }
 }
 
-pub fn part_2(_input: &str) -> Solution {
-    let (rules, updates) = parse(_input);
-
-    let mut sum: usize = 0;
-
-    for update in updates {
-        let mut valid_rules = Vec::new();
-        let mut sorted = true;
-
-        for rule in rules.iter() {
-            if let Some(x) = update.map.get(&rule.x) {
-                if let Some(y) = update.map.get(&rule.y) {
-                    valid_rules.push(rule);
-                    if x >= y {
-                        sorted = false;
-                    }
-                }
-            }
-        }
-
-        if sorted {
-            continue;
-        }
-
-        let mut x_map: HashMap<u8, HashSet<u8>> = HashMap::new();
-        let mut y_map: HashMap<u8, HashSet<u8>> = HashMap::new();
-
-        for rule in valid_rules.iter() {
-            if let Some(list) = x_map.get_mut(&rule.x) {
-                list.insert(rule.y);
-            } else {
-                let mut list = HashSet::new();
-                list.insert(rule.y);
-                x_map.insert(rule.x, list);
+fn find_next_page(update: &Vec<usize>, rules: &Vec<Vec<usize>>) -> Option<usize> {
+    for i in 0..update.len() {
+        let rule = &rules[update[i]];
+        let mut found = true;
+        for n in 0..update.len() {
+            if n == i {
+                continue;
             }
 
-            if let Some(list) = y_map.get_mut(&rule.y) {
-                list.insert(rule.x);
-            } else {
-                let mut list = HashSet::new();
-                list.insert(rule.x);
-                y_map.insert(rule.y, list);
+            if rule.contains(&update[n]) {
+                found = false;
+                break;
             }
         }
-
-        let mut pages = HashSet::new();
-        for page in update.pages {
-            pages.insert(page);
+        if found {
+            return Some(i);
         }
-
-        let mut front = Vec::new();
-        let mut back = Vec::new();
-
-        while pages.len() > 0 {
-            let mut to_remove = Vec::new();
-            for page in pages.iter() {
-                if let Some(list) = x_map.get(&page) {
-                    if list.is_empty() {
-                        back.push(*page);
-                        to_remove.push(*page);
-                        remove_page_from_maps(&mut x_map, &mut y_map, *page);
-                        continue;
-                    }
-                } else {
-                    back.push(*page);
-                    to_remove.push(*page);
-                    remove_page_from_maps(&mut x_map, &mut y_map, *page);
-                    continue;
-                }
-
-                if let Some(list) = y_map.get(&page) {
-                    if list.is_empty() {
-                        front.push(*page);
-                        to_remove.push(*page);
-                        remove_page_from_maps(&mut x_map, &mut y_map, *page);
-                    }
-                } else {
-                    front.push(*page);
-                    to_remove.push(*page);
-                    remove_page_from_maps(&mut x_map, &mut y_map, *page);
-                }
-            }
-
-            for i in to_remove {
-                pages.remove(&i);
-            }
-        }
-
-        back.reverse();
-        front.append(&mut back);
-
-        let mid = (front.len() - 1) / 2;
-        sum += front[mid] as usize;
     }
-
-    sum.into()
+    None
 }
 
-fn remove_page_from_maps(
-    x_map: &mut HashMap<u8, HashSet<u8>>,
-    y_map: &mut HashMap<u8, HashSet<u8>>,
-    id: u8,
-) {
-    if let Some(list) = x_map.remove(&id) {
-        for node in list {
-            if let Some(inner_list) = y_map.get_mut(&node) {
-                inner_list.remove(&id);
-            }
-        }
-    }
+fn check_2(update: &mut Vec<usize>, rules: &Vec<Vec<usize>>) -> usize {
+    let mut result = 0;
 
-    if let Some(list) = y_map.remove(&id) {
-        for node in list {
-            if let Some(inner_list) = x_map.get_mut(&node) {
-                inner_list.remove(&id);
-            }
+    for _ in 0..=update.len() / 2 {
+        if let Some(page_index) = find_next_page(update, rules) {
+            result = update.remove(page_index);
         }
     }
+    result
+}
+
+pub fn part_2(_input: &str) -> Solution {
+    let (rules, mut updates) = parse(_input);
+    updates
+        .iter_mut()
+        .filter(|update| check_1(update, &rules).is_none())
+        .map(|mut update| check_2(&mut update, &rules))
+        .sum::<usize>()
+        .into()
 }
 
 #[cfg(test)]
