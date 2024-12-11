@@ -158,4 +158,6 @@ pub mod ipoint;
 pub mod parse;
 pub mod point;
 pub mod point_vec2d;
+pub mod switching_state;
+pub mod translator;
 pub mod vec2d;

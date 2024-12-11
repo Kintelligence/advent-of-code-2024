@@ -1,5 +1,6 @@
-use fxhash::FxHashMap as HashMap;
 use std::iter::from_fn;
+use switching_state::SwitchingState;
+use translator::Translator;
 
 use parse::Parsable;
 use shared::*;
@@ -30,41 +31,84 @@ fn split(stone: usize) -> Option<(usize, usize)> {
     return Some((stone / d, stone % d));
 }
 
-fn next_1(stone: usize, iterations: usize, cache: &mut HashMap<usize, [usize; 26]>) -> usize {
-    if stone == 0 {
-        return count_1(1, iterations - 1, cache);
-    } else if let Some((left, right)) = split(stone) {
-        return count_1(left, iterations - 1, cache) + count_1(right, iterations - 1, cache);
-    }
-    return count_1(stone * 2024, iterations - 1, cache);
+struct State {
+    stones: Vec<usize>,
+    counts: [usize; 5000],
 }
 
-fn count_1(stone: usize, iterations: usize, cache: &mut HashMap<usize, [usize; 26]>) -> usize {
-    if iterations == 0 {
-        return 1;
-    }
-
-    if let Some(map) = cache.get_mut(&stone) {
-        let result = map[iterations];
-        if result != 0 {
-            return result;
+impl State {
+    pub fn new() -> Self {
+        Self {
+            stones: Vec::with_capacity(5000),
+            counts: [0; 5000],
         }
-    } else {
-        cache.insert(stone, [0; 26]);
     }
 
-    let result = next_1(stone, iterations, cache);
-    cache.get_mut(&stone).unwrap()[iterations] = result;
-    result
+    pub fn clear(&mut self) {
+        self.stones.clear();
+        self.counts.fill(0);
+    }
+
+    pub fn add_to_next(&mut self, stone: usize, id: usize, count: usize) {
+        if self.counts[id] == 0 {
+            self.stones.push(stone);
+        }
+        self.counts[id] += count;
+    }
+}
+
+fn solve(initial_stones: Vec<usize>, iterations: usize) -> usize {
+    let mut translator = Translator::new();
+    let mut cache = [(usize::MAX, 0, usize::MAX, 0); 5000];
+    let mut state = SwitchingState::new(State::new(), State::new());
+    let (_, next) = state.states();
+
+    for stone in initial_stones {
+        next.add_to_next(stone, translator.translate(stone), 1);
+    }
+
+    cache[translator.translate(0)] = (1, translator.translate(1), usize::MAX, 0);
+
+    for _ in 0..iterations {
+        state.switch();
+        state.next().clear();
+        let (current, next) = state.states();
+        for &stone in current.stones.iter() {
+            let current_id = translator.translate(stone);
+            let count = current.counts[current_id];
+            let (cache_left_stone, cache_left_id, cache_right_stone, cache_right_id) =
+                cache[current_id];
+            if cache_left_stone != usize::MAX {
+                next.add_to_next(cache_left_stone, cache_left_id, count);
+                if cache_right_stone != usize::MAX {
+                    next.add_to_next(cache_right_stone, cache_right_id, count);
+                }
+            } else if let Some((left, right)) = split(stone) {
+                let left_id = translator.translate(left);
+                let right_id = translator.translate(right);
+                cache[current_id] = (left, left_id, right, right_id);
+                next.add_to_next(left, left_id, count);
+                next.add_to_next(right, right_id, count);
+            } else {
+                let stone = stone * 2024;
+                let id = translator.translate(stone);
+                cache[current_id] = (stone, id, usize::MAX, 0);
+                next.add_to_next(stone, id, count);
+            }
+        }
+    }
+
+    let (_, current) = state.states();
+
+    current
+        .stones
+        .iter()
+        .map(|&stone| current.counts[translator.translate(stone)])
+        .sum()
 }
 
 pub fn part_1(_input: &str) -> Solution {
-    let mut cache = HashMap::default();
-    parse(_input)
-        .iter()
-        .map(|rock| count_1(*rock, 25, &mut cache))
-        .sum::<usize>()
-        .into()
+    solve(parse(_input), 25).into()
 }
 
 #[cfg(test)]
@@ -83,41 +127,8 @@ mod part_1_tests {
     }
 }
 
-fn next_2(stone: usize, iterations: usize, cache: &mut HashMap<usize, Vec<usize>>) -> usize {
-    if stone == 0 {
-        return count_2(1, iterations - 1, cache);
-    } else if let Some((left, right)) = split(stone) {
-        return count_2(left, iterations - 1, cache) + count_2(right, iterations - 1, cache);
-    }
-    return count_2(stone * 2024, iterations - 1, cache);
-}
-
-fn count_2(stone: usize, iterations: usize, cache: &mut HashMap<usize, Vec<usize>>) -> usize {
-    if iterations == 0 {
-        return 1;
-    }
-
-    if let Some(map) = cache.get_mut(&stone) {
-        let result = map[iterations];
-        if result != 0 {
-            return result;
-        }
-    } else {
-        cache.insert(stone, vec![0; 76]);
-    }
-
-    let result = next_2(stone, iterations, cache);
-    cache.get_mut(&stone).unwrap()[iterations] = result;
-    result
-}
-
 pub fn part_2(_input: &str) -> Solution {
-    let mut cache = HashMap::default();
-    parse(_input)
-        .iter()
-        .map(|rock| count_2(*rock, 75, &mut cache))
-        .sum::<usize>()
-        .into()
+    solve(parse(_input), 75).into()
 }
 
 #[cfg(test)]
