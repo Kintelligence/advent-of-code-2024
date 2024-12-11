@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use point::Point;
-use point_vec2d::{Direction, PointVec2d};
+use point_grid::{Direction, PointGrid};
 use shared::*;
 
 extern crate shared;
@@ -14,7 +14,11 @@ enum Tile {
     Obstacle,
 }
 
-fn parse(input: &str) -> (PointVec2d<Tile>, Point) {
+struct Graph {}
+
+fn parse_graph(input: &str) {}
+
+fn parse(input: &str) -> (PointGrid<Tile>, Point) {
     let mut vec = Vec::new();
 
     let mut height = 0;
@@ -37,11 +41,11 @@ fn parse(input: &str) -> (PointVec2d<Tile>, Point) {
         height += 1;
     }
 
-    (PointVec2d::from_vec(vec, height), start)
+    (PointGrid::from_vec(vec, height), start)
 }
 
-fn solve_1(map: PointVec2d<Tile>, start: Point) -> usize {
-    let mut visited = PointVec2d::from_vec(vec![false; map.width * map.height], map.height);
+fn solve_1(map: PointGrid<Tile>, start: Point) -> usize {
+    let mut visited = PointGrid::from_vec(vec![false; map.width * map.height], map.height);
     let mut current = start;
     let mut visited_count = 1;
     let mut direction = Direction::North;
@@ -88,8 +92,8 @@ mod part_1_tests {
     }
 }
 
-fn solve_2(map: PointVec2d<Tile>, start: Point) -> usize {
-    let mut visited = PointVec2d::from_vec(vec![[false; 4]; map.width * map.height], map.height);
+fn solve_2(map: PointGrid<Tile>, start: Point) -> usize {
+    let mut visited = PointGrid::from_vec(vec![[false; 4]; map.width * map.height], map.height);
     let mut current = start;
     let mut loops = HashSet::new();
     let mut direction = Direction::North;
@@ -103,7 +107,7 @@ fn solve_2(map: PointVec2d<Tile>, start: Point) -> usize {
 
         if visited[next].iter().all(|seen| !seen) {
             let mut visited_b =
-                PointVec2d::from_vec(vec![[false; 4]; map.width * map.height], map.height);
+                PointGrid::from_vec(vec![[false; 4]; map.width * map.height], map.height);
             let mut direction_b = direction.rotate_clockwise();
             let mut current_b = current;
 

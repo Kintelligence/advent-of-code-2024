@@ -53,13 +53,13 @@ impl From<Direction> for usize {
 }
 
 #[derive(Clone, Debug)]
-pub struct PointVec2d<T> {
+pub struct PointGrid<T> {
     pub vec: Vec<T>,
     pub width: usize,
     pub height: usize,
 }
 
-impl<T> PointVec2d<T> {
+impl<T> PointGrid<T> {
     pub fn from_vec(vec: Vec<T>, height: usize) -> Self {
         Self {
             width: vec.len() / height,
@@ -211,7 +211,7 @@ impl<T> PointVec2d<T> {
     }
 }
 
-impl<T> std::ops::Index<Point> for PointVec2d<T> {
+impl<T> std::ops::Index<Point> for PointGrid<T> {
     fn index(&self, index: Point) -> &T {
         self.index(index)
     }
@@ -219,13 +219,13 @@ impl<T> std::ops::Index<Point> for PointVec2d<T> {
     type Output = T;
 }
 
-impl<T> std::ops::IndexMut<Point> for PointVec2d<T> {
+impl<T> std::ops::IndexMut<Point> for PointGrid<T> {
     fn index_mut(&mut self, index: Point) -> &mut T {
         self.index_mut(index)
     }
 }
 
-default impl<T: std::fmt::Debug> std::fmt::Display for PointVec2d<T> {
+default impl<T: std::fmt::Debug> std::fmt::Display for PointGrid<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut str = String::new();
         for i in 0..self.height {
@@ -239,7 +239,7 @@ default impl<T: std::fmt::Debug> std::fmt::Display for PointVec2d<T> {
     }
 }
 
-impl std::fmt::Display for PointVec2d<bool> {
+impl std::fmt::Display for PointGrid<bool> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut str = String::new();
         for y in 0..self.height {

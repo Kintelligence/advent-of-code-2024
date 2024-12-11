@@ -2,9 +2,9 @@ use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Debug)]
 pub struct Vector3d {
-    pub  x: f64,
-    pub  y: f64,
-    pub  z: f64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 impl Vector3d {
@@ -15,8 +15,8 @@ impl Vector3d {
             z: self.x * rhs.y - self.y * rhs.x,
         }
     }
-    
-    pub  fn dot(&self, rhs: &Vector3d) -> f64 {
+
+    pub fn dot(&self, rhs: &Vector3d) -> f64 {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
 }
@@ -121,7 +121,7 @@ impl Sub for &Vector3d {
     }
 }
 
-impl Sub<Vector3d> for &Vector3d{
+impl Sub<Vector3d> for &Vector3d {
     type Output = Vector3d;
 
     fn sub(self, rhs: Vector3d) -> Self::Output {
@@ -133,7 +133,7 @@ impl Sub<Vector3d> for &Vector3d{
     }
 }
 
-impl Sub<&Vector3d> for Vector3d{
+impl Sub<&Vector3d> for Vector3d {
     type Output = Vector3d;
 
     fn sub(self, rhs: &Vector3d) -> Self::Output {

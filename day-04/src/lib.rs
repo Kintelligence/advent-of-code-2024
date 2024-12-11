@@ -1,5 +1,5 @@
+use grid::{Directions, Grid, DIRECTIONS};
 use shared::*;
-use vec2d::{Directions, Vec2d, DIRECTIONS};
 
 extern crate shared;
 
@@ -13,7 +13,7 @@ enum Letter {
     S,
 }
 
-fn parse(input: &str) -> Vec2d<Letter> {
+fn parse(input: &str) -> Grid<Letter> {
     let lines = input.lines();
     let mut height = 0;
     let mut vec = Vec::new();
@@ -33,10 +33,10 @@ fn parse(input: &str) -> Vec2d<Letter> {
         }
     }
 
-    Vec2d::from_vec(vec, height)
+    Grid::from_vec(vec, height)
 }
 
-fn test_1(map: &Vec2d<Letter>, x: usize, y: usize, direction: Directions) -> bool {
+fn test_1(map: &Grid<Letter>, x: usize, y: usize, direction: Directions) -> bool {
     if let Some((x, y)) = map.go(x, y, direction) {
         if *map.index(x, y) == Letter::M {
             if let Some((x, y)) = map.go(x, y, direction) {
@@ -53,7 +53,7 @@ fn test_1(map: &Vec2d<Letter>, x: usize, y: usize, direction: Directions) -> boo
     return false;
 }
 
-fn solve_1(map: Vec2d<Letter>) -> usize {
+fn solve_1(map: Grid<Letter>) -> usize {
     let mut count = 0;
     for y in 0..map.height {
         for x in 0..map.width {
@@ -92,7 +92,7 @@ mod part_1_tests {
 }
 
 fn test_2(
-    map: &Vec2d<Letter>,
+    map: &Grid<Letter>,
     x: usize,
     y: usize,
     direction: Directions,
@@ -110,7 +110,7 @@ fn test_2(
     }
 }
 
-fn solve_2(map: Vec2d<Letter>) -> usize {
+fn solve_2(map: Grid<Letter>) -> usize {
     let mut count = 0;
     for y in 0..map.height {
         for x in 0..map.width {

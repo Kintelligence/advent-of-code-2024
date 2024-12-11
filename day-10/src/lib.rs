@@ -1,12 +1,12 @@
 use point::Point;
-use point_vec2d::{Direction, PointVec2d};
+use point_grid::{Direction, PointGrid};
 use shared::*;
 
 extern crate shared;
 
 pub const _INPUT: &'static str = include_str!("_input.txt");
 
-fn parse(input: &str) -> PointVec2d<u8> {
+fn parse(input: &str) -> PointGrid<u8> {
     let mut vec = Vec::new();
     let mut height = 0;
 
@@ -20,10 +20,10 @@ fn parse(input: &str) -> PointVec2d<u8> {
         height += 1;
     }
 
-    PointVec2d::from_vec(vec, height)
+    PointGrid::from_vec(vec, height)
 }
 
-fn traverse_1<I>(map: &PointVec2d<u8>, iter: I, height: u8, seen: &mut PointVec2d<bool>) -> usize
+fn traverse_1<I>(map: &PointGrid<u8>, iter: I, height: u8, seen: &mut PointGrid<bool>) -> usize
 where
     I: Iterator<Item = (Point, Direction)>,
 {
@@ -54,8 +54,7 @@ pub fn part_1(_input: &str) -> Solution {
     map.positions()
         .filter_map(|position| {
             if map[position] == 0 {
-                let mut seen =
-                    PointVec2d::from_vec(vec![false; map.height * map.width], map.height);
+                let mut seen = PointGrid::from_vec(vec![false; map.height * map.width], map.height);
                 return Some(traverse_1(
                     &map,
                     map.adjacent_four_directional(position),
@@ -89,7 +88,7 @@ mod part_1_tests {
     }
 }
 
-fn traverse_2<I>(map: &PointVec2d<u8>, iter: I, height: u8) -> usize
+fn traverse_2<I>(map: &PointGrid<u8>, iter: I, height: u8) -> usize
 where
     I: Iterator<Item = (Point, Direction)>,
 {

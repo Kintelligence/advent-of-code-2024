@@ -1,12 +1,12 @@
 use core::fmt;
 
-pub struct Vec2d<T> {
+pub struct Grid<T> {
     pub vec: Vec<T>,
     pub width: usize,
     pub height: usize,
 }
 
-impl<T> Vec2d<T> {
+impl<T> Grid<T> {
     pub fn from_vec(vec: Vec<T>, height: usize) -> Self {
         Self {
             width: vec.len() / height,
@@ -136,7 +136,7 @@ impl<T> Vec2d<T> {
     }
 }
 
-impl<T> std::ops::Index<(usize, usize)> for Vec2d<T> {
+impl<T> std::ops::Index<(usize, usize)> for Grid<T> {
     fn index(&self, index: (usize, usize)) -> &T {
         self.index(index.0, index.1)
     }
@@ -144,13 +144,13 @@ impl<T> std::ops::Index<(usize, usize)> for Vec2d<T> {
     type Output = T;
 }
 
-impl<T> std::ops::IndexMut<(usize, usize)> for Vec2d<T> {
+impl<T> std::ops::IndexMut<(usize, usize)> for Grid<T> {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut T {
         self.index_mut(index.0, index.1)
     }
 }
 
-impl<T: std::fmt::Debug> std::fmt::Display for Vec2d<T> {
+impl<T: std::fmt::Debug> std::fmt::Display for Grid<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut str = String::new();
         for i in 0..self.height {
