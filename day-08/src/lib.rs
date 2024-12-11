@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use fxhash::FxHashMap as HashMap;
 
 use ipoint::IPoint;
 use point::Point;
@@ -12,7 +12,7 @@ pub const _INPUT: &'static str = include_str!("_input.txt");
 fn parse(input: &str) -> (Vec<Vec<IPoint>>, usize, usize) {
     let mut y = 0;
 
-    let mut translation = HashMap::new();
+    let mut translation = HashMap::default();
     let mut next_id: usize = 0;
     let mut sets: Vec<Vec<IPoint>> = Vec::new();
     let mut x = 0;

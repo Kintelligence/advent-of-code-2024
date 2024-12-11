@@ -1,4 +1,5 @@
-use std::{collections::HashMap, iter::from_fn};
+use fxhash::FxHashMap as HashMap;
+use std::iter::from_fn;
 
 use parse::Parsable;
 use shared::*;
@@ -58,7 +59,7 @@ fn count_1(stone: usize, iterations: usize, cache: &mut HashMap<usize, [usize; 2
 }
 
 pub fn part_1(_input: &str) -> Solution {
-    let mut cache = HashMap::new();
+    let mut cache = HashMap::default();
     parse(_input)
         .iter()
         .map(|rock| count_1(*rock, 25, &mut cache))
@@ -111,7 +112,7 @@ fn count_2(stone: usize, iterations: usize, cache: &mut HashMap<usize, Vec<usize
 }
 
 pub fn part_2(_input: &str) -> Solution {
-    let mut cache = HashMap::new();
+    let mut cache = HashMap::default();
     parse(_input)
         .iter()
         .map(|rock| count_2(*rock, 75, &mut cache))

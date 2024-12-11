@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use fxhash::FxHashMap as HashMap;
 
 use shared::parse::Parsable;
 use shared::*;
@@ -52,7 +52,7 @@ mod part_1_tests {
 }
 
 fn solve_2(left: &mut Vec<u32>, right: &mut Vec<u32>) -> usize {
-    let mut hash = HashMap::new();
+    let mut hash = HashMap::default();
     for n in left {
         if let Some(i) = hash.get(&n) {
             hash.insert(n, i + 1);
