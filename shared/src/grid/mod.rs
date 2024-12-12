@@ -6,6 +6,19 @@ pub struct Grid<T> {
     pub height: usize,
 }
 
+impl<T> Grid<T>
+where
+    T: Clone,
+{
+    pub fn empty(fill: T, height: usize, width: usize) -> Self {
+        Self {
+            vec: vec![fill; height * width],
+            width,
+            height,
+        }
+    }
+}
+
 impl<T> Grid<T> {
     pub fn from_vec(vec: Vec<T>, height: usize) -> Self {
         Self {
@@ -136,7 +149,10 @@ impl<T> Grid<T> {
     }
 }
 
-impl<T> std::ops::Index<(usize, usize)> for Grid<T> {
+impl<T> std::ops::Index<(usize, usize)> for Grid<T>
+where
+    T: Clone,
+{
     fn index(&self, index: (usize, usize)) -> &T {
         self.index(index.0, index.1)
     }
@@ -144,13 +160,19 @@ impl<T> std::ops::Index<(usize, usize)> for Grid<T> {
     type Output = T;
 }
 
-impl<T> std::ops::IndexMut<(usize, usize)> for Grid<T> {
+impl<T> std::ops::IndexMut<(usize, usize)> for Grid<T>
+where
+    T: Clone,
+{
     fn index_mut(&mut self, index: (usize, usize)) -> &mut T {
         self.index_mut(index.0, index.1)
     }
 }
 
-impl<T: std::fmt::Debug> std::fmt::Display for Grid<T> {
+impl<T: std::fmt::Debug> std::fmt::Display for Grid<T>
+where
+    T: Clone,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut str = String::new();
         for i in 0..self.height {

@@ -59,6 +59,19 @@ pub struct PointGrid<T> {
     pub height: usize,
 }
 
+impl<T> PointGrid<T>
+where
+    T: Clone,
+{
+    pub fn empty(fill: T, height: usize, width: usize) -> Self {
+        Self {
+            vec: vec![fill; height * width],
+            width,
+            height,
+        }
+    }
+}
+
 impl<T> PointGrid<T> {
     pub fn from_vec(vec: Vec<T>, height: usize) -> Self {
         Self {

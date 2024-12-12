@@ -14,10 +14,6 @@ enum Tile {
     Obstacle,
 }
 
-struct Graph {}
-
-fn parse_graph(input: &str) {}
-
 fn parse(input: &str) -> (PointGrid<Tile>, Point) {
     let mut vec = Vec::new();
 
