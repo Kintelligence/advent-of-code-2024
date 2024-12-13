@@ -1,7 +1,7 @@
 use core::fmt;
-use std::ops::{Add, Sub};
+use std::ops::{Add, Div, Mul, Sub};
 
-use crate::ipoint::IPoint;
+use crate::{common::Modulo, ipoint::IPoint};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, PartialOrd, Ord, Hash)]
 pub struct Point {
@@ -132,6 +132,258 @@ impl Sub<&Point> for Point {
         Point {
             x: self.x - rhs.x,
             y: self.y - rhs.y,
+        }
+    }
+}
+
+impl Mul<usize> for Point {
+    type Output = Point;
+
+    fn mul(self, rhs: usize) -> Self::Output {
+        Point {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
+}
+
+impl Mul<usize> for &Point {
+    type Output = Point;
+
+    fn mul(self, rhs: usize) -> Self::Output {
+        Point {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
+}
+
+impl Mul<&usize> for Point {
+    type Output = Point;
+
+    fn mul(self, rhs: &usize) -> Self::Output {
+        Point {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
+}
+
+impl Mul<&usize> for &Point {
+    type Output = Point;
+
+    fn mul(self, rhs: &usize) -> Self::Output {
+        Point {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
+}
+
+impl Div<usize> for Point {
+    type Output = Point;
+
+    fn div(self, rhs: usize) -> Self::Output {
+        Point {
+            x: self.x / rhs,
+            y: self.y / rhs,
+        }
+    }
+}
+
+impl Div<usize> for &Point {
+    type Output = Point;
+
+    fn div(self, rhs: usize) -> Self::Output {
+        Point {
+            x: self.x / rhs,
+            y: self.y / rhs,
+        }
+    }
+}
+
+impl Div<&usize> for Point {
+    type Output = Point;
+
+    fn div(self, rhs: &usize) -> Self::Output {
+        Point {
+            x: self.x / rhs,
+            y: self.y / rhs,
+        }
+    }
+}
+
+impl Div<&usize> for &Point {
+    type Output = Point;
+
+    fn div(self, rhs: &usize) -> Self::Output {
+        Point {
+            x: self.x / rhs,
+            y: self.y / rhs,
+        }
+    }
+}
+
+impl Modulo<usize> for Point {
+    type Output = Point;
+
+    fn modulo(self, rhs: usize) -> Self::Output {
+        Point {
+            x: self.x % rhs,
+            y: self.y % rhs,
+        }
+    }
+}
+
+impl Modulo<usize> for &Point {
+    type Output = Point;
+
+    fn modulo(self, rhs: usize) -> Self::Output {
+        Point {
+            x: self.x % rhs,
+            y: self.y % rhs,
+        }
+    }
+}
+
+impl Modulo<&usize> for Point {
+    type Output = Point;
+
+    fn modulo(self, rhs: &usize) -> Self::Output {
+        Point {
+            x: self.x % rhs,
+            y: self.y % rhs,
+        }
+    }
+}
+
+impl Modulo<&usize> for &Point {
+    type Output = Point;
+
+    fn modulo(self, rhs: &usize) -> Self::Output {
+        Point {
+            x: self.x % rhs,
+            y: self.y % rhs,
+        }
+    }
+}
+
+impl Mul<Point> for Point {
+    type Output = Point;
+
+    fn mul(self, rhs: Point) -> Self::Output {
+        Point {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+        }
+    }
+}
+
+impl Mul<Point> for &Point {
+    type Output = Point;
+
+    fn mul(self, rhs: Point) -> Self::Output {
+        Point {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+        }
+    }
+}
+
+impl Mul<&Point> for Point {
+    type Output = Point;
+
+    fn mul(self, rhs: &Point) -> Self::Output {
+        Point {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+        }
+    }
+}
+
+impl Mul<&Point> for &Point {
+    type Output = Point;
+
+    fn mul(self, rhs: &Point) -> Self::Output {
+        Point {
+            x: self.x * rhs.x,
+            y: self.y * rhs.y,
+        }
+    }
+}
+
+impl Div<Point> for Point {
+    type Output = Point;
+
+    fn div(self, rhs: Point) -> Self::Output {
+        Point {
+            x: self.x / rhs.x,
+            y: self.y / rhs.y,
+        }
+    }
+}
+
+impl Div<Point> for &Point {
+    type Output = Point;
+
+    fn div(self, rhs: Point) -> Self::Output {
+        Point {
+            x: self.x / rhs.x,
+            y: self.y / rhs.y,
+        }
+    }
+}
+
+impl Div<&Point> for Point {
+    type Output = Point;
+
+    fn div(self, rhs: &Point) -> Self::Output {
+        Point {
+            x: self.x / rhs.x,
+            y: self.y / rhs.y,
+        }
+    }
+}
+
+impl Div<&Point> for &Point {
+    type Output = Point;
+
+    fn div(self, rhs: &Point) -> Self::Output {
+        Point {
+            x: self.x / rhs.x,
+            y: self.y / rhs.y,
+        }
+    }
+}
+impl Modulo<Point> for &Point {
+    type Output = Point;
+
+    fn modulo(self, rhs: Point) -> Self::Output {
+        Point {
+            x: self.x % rhs.x,
+            y: self.y % rhs.y,
+        }
+    }
+}
+
+impl Modulo<&Point> for Point {
+    type Output = Point;
+
+    fn modulo(self, rhs: &Point) -> Self::Output {
+        Point {
+            x: self.x % rhs.x,
+            y: self.y % rhs.y,
+        }
+    }
+}
+
+impl Modulo<&Point> for &Point {
+    type Output = Point;
+
+    fn modulo(self, rhs: &Point) -> Self::Output {
+        Point {
+            x: self.x % rhs.x,
+            y: self.y % rhs.y,
         }
     }
 }

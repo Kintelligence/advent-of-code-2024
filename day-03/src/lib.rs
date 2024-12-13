@@ -1,5 +1,5 @@
 #![feature(iter_advance_by)]
-use parse::Parsable;
+use parse::ParsableStrict;
 use shared::*;
 
 extern crate shared;

@@ -1,3 +1,5 @@
+use crate::{ipoint::IPoint, point::Point};
+
 pub trait ToDigit {
     fn to_digit(&self) -> Option<u8>;
 }
@@ -13,7 +15,28 @@ impl ToDigit for u8 {
 
 pub trait Parsable<T>: Iterator {
     fn next_number(&mut self) -> Option<T>;
+}
+
+pub trait ParsableStrict<T>: Iterator {
     fn next_number_strict(&mut self) -> (Option<T>, Option<u8>);
+}
+
+impl<T: Iterator<Item = u8>> Parsable<Point> for T {
+    fn next_number(&mut self) -> Option<Point> {
+        if let Some((x, y)) = self.next_number().zip(self.next_number()) {
+            return Some(Point::new(x, y));
+        }
+        None
+    }
+}
+
+impl<T: Iterator<Item = u8>> Parsable<IPoint> for T {
+    fn next_number(&mut self) -> Option<IPoint> {
+        if let Some((x, y)) = self.next_number().zip(self.next_number()) {
+            return Some(IPoint::new(x, y));
+        }
+        None
+    }
 }
 
 macro_rules! parsable_number {
@@ -35,6 +58,13 @@ macro_rules! parsable_number {
 
                 value
             }
+        }
+    };
+}
+
+macro_rules! parsable_number_strict {
+    ($type:ident) => {
+        impl<T: Iterator<Item = u8>> ParsableStrict<$type> for T {
             fn next_number_strict(&mut self) -> (Option<$type>, Option<u8>) {
                 let mut value: Option<$type> = None;
                 for byte in self {
@@ -88,6 +118,13 @@ macro_rules! parsable_negative_number {
                 }
                 None
             }
+        }
+    };
+}
+
+macro_rules! parsable_negative_number_strict {
+    ($type:ident) => {
+        impl<T: Iterator<Item = u8>> ParsableStrict<$type> for T {
             fn next_number_strict(&mut self) -> (Option<$type>, Option<u8>) {
                 let mut negative = false;
                 let mut value: Option<$type> = None;
@@ -140,7 +177,7 @@ macro_rules! parsable_float_number {
                             return Some(-value);
                         }
                         return Some(value);
-                    } else if byte == b'-' {
+                    } else if byte == b'-' && value.is_none() {
                         negative = true;
                     } else {
                         negative = false;
@@ -155,6 +192,13 @@ macro_rules! parsable_float_number {
                 }
                 None
             }
+        }
+    };
+}
+
+macro_rules! parsable_float_number_strict {
+    ($type:ident) => {
+        impl<T: Iterator<Item = u8>> ParsableStrict<$type> for T {
             fn next_number_strict(&mut self) -> (Option<$type>, Option<u8>) {
                 let mut negative = false;
                 let mut value: Option<$type> = None;
@@ -165,7 +209,7 @@ macro_rules! parsable_float_number {
                         } else {
                             value = Some(digit as $type);
                         }
-                    } else if byte == b'-' {
+                    } else if byte == b'-' && value.is_none() {
                         negative = true;
                     } else if let Some(value) = value {
                         if negative {
@@ -195,11 +239,25 @@ parsable_number!(u32);
 parsable_number!(u64);
 parsable_number!(u128);
 parsable_number!(usize);
+parsable_number_strict!(u8);
+parsable_number_strict!(u16);
+parsable_number_strict!(u32);
+parsable_number_strict!(u64);
+parsable_number_strict!(u128);
+parsable_number_strict!(usize);
 parsable_float_number!(f32);
 parsable_float_number!(f64);
+parsable_float_number_strict!(f32);
+parsable_float_number_strict!(f64);
 parsable_negative_number!(i8);
 parsable_negative_number!(i16);
 parsable_negative_number!(i32);
 parsable_negative_number!(i64);
 parsable_negative_number!(i128);
 parsable_negative_number!(isize);
+parsable_negative_number_strict!(i8);
+parsable_negative_number_strict!(i16);
+parsable_negative_number_strict!(i32);
+parsable_negative_number_strict!(i64);
+parsable_negative_number_strict!(i128);
+parsable_negative_number_strict!(isize);
