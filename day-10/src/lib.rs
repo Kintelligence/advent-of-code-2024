@@ -1,5 +1,5 @@
 use point::Point;
-use point_grid::{Direction, PointGrid};
+use point_grid::{Direction4, PointGrid};
 use shared::*;
 
 extern crate shared;
@@ -25,7 +25,7 @@ fn parse(input: &str) -> PointGrid<u8> {
 
 fn traverse_1<I>(map: &PointGrid<u8>, iter: I, height: u8, seen: &mut PointGrid<bool>) -> usize
 where
-    I: Iterator<Item = (Point, Direction)>,
+    I: Iterator<Item = (Point, Direction4)>,
 {
     let mut result = 0;
     let valid_points = iter.filter(|(p, _)| map[*p] == height);
@@ -90,7 +90,7 @@ mod part_1_tests {
 
 fn traverse_2<I>(map: &PointGrid<u8>, iter: I, height: u8) -> usize
 where
-    I: Iterator<Item = (Point, Direction)>,
+    I: Iterator<Item = (Point, Direction4)>,
 {
     let valid_points = iter.filter(|(p, _)| map[*p] == height);
     if height >= 9 {

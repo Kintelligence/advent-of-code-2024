@@ -2,52 +2,67 @@ use core::fmt;
 
 use crate::point::Point;
 
-pub const DIRECTIONS: [Direction; 4] = [
-    Direction::North,
-    Direction::East,
-    Direction::South,
-    Direction::West,
+pub const DIRECTIONS: [Direction4; 4] = [
+    Direction4::North,
+    Direction4::East,
+    Direction4::South,
+    Direction4::West,
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Direction {
+pub enum Direction4 {
     North,
     East,
     South,
     West,
 }
 
-impl Direction {
+impl std::fmt::Display for Direction4 {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Direction4::North => "North",
+                Direction4::East => "East",
+                Direction4::South => "South",
+                Direction4::West => "West",
+            }
+        )
+    }
+}
+
+impl Direction4 {
     pub fn rotate_clockwise(&self) -> Self {
         match self {
-            Direction::North => Self::East,
-            Direction::East => Self::South,
-            Direction::South => Self::West,
-            Direction::West => Self::North,
+            Direction4::North => Self::East,
+            Direction4::East => Self::South,
+            Direction4::South => Self::West,
+            Direction4::West => Self::North,
         }
     }
 
     pub fn rotate_counterclockwise(&self) -> Self {
         match self {
-            Direction::North => Self::West,
-            Direction::East => Self::North,
-            Direction::South => Self::East,
-            Direction::West => Self::South,
+            Direction4::North => Self::West,
+            Direction4::East => Self::North,
+            Direction4::South => Self::East,
+            Direction4::West => Self::South,
         }
     }
 
     pub fn reverse(&self) -> Self {
         match self {
-            Direction::North => Self::South,
-            Direction::East => Self::West,
-            Direction::South => Self::North,
-            Direction::West => Self::East,
+            Direction4::North => Self::South,
+            Direction4::East => Self::West,
+            Direction4::South => Self::North,
+            Direction4::West => Self::East,
         }
     }
 }
 
-impl From<Direction> for usize {
-    fn from(value: Direction) -> Self {
+impl From<Direction4> for usize {
+    fn from(value: Direction4) -> Self {
         value as usize
     }
 }
@@ -118,13 +133,29 @@ impl<T> PointGrid<T> {
         false
     }
 
-    pub fn go(&self, point: Point, direction: Direction) -> Option<Point> {
+    pub fn go(&self, point: Point, direction: Direction4) -> Option<Point> {
         match direction {
-            Direction::North => self.up(point),
-            Direction::East => self.right(point),
-            Direction::South => self.down(point),
-            Direction::West => self.left(point),
+            Direction4::North => self.up(point),
+            Direction4::East => self.right(point),
+            Direction4::South => self.down(point),
+            Direction4::West => self.left(point),
         }
+    }
+
+    pub fn down_left(&self, point: Point) -> Option<Point> {
+        if point.y >= self.height - 1 || point.x == 0 {
+            return None;
+        }
+
+        Some(Point::new(point.x - 1, point.y + 1))
+    }
+
+    pub fn down_right(&self, point: Point) -> Option<Point> {
+        if point.y >= self.height - 1 || point.x >= self.width - 1 {
+            return None;
+        }
+
+        Some(Point::new(point.x + 1, point.y + 1))
     }
 
     pub fn up(&self, point: Point) -> Option<Point> {
@@ -201,7 +232,7 @@ impl<T> PointGrid<T> {
     pub fn adjacent_three_directional(
         &self,
         point: Point,
-        from: Direction,
+        from: Direction4,
     ) -> AdjacentThreeDirectional {
         AdjacentThreeDirectional {
             x: point.x,
@@ -340,7 +371,7 @@ impl Iterator for AdjecentEight {
     }
 }
 
-pub const ADJ_FOUR: [(isize, isize); 4] = [(-1, 0), (0, -1), (0, 1), (1, 0)];
+pub const ADJ_FOUR: [(isize, isize); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
 
 pub struct AdjacentFour {
     x: usize,
@@ -379,21 +410,21 @@ pub struct AdjacentThreeDirectional {
     height: usize,
     width: usize,
     current: usize,
-    direction: Direction,
+    direction: Direction4,
 }
 
 impl Iterator for AdjacentThreeDirectional {
-    type Item = (Point, Direction);
+    type Item = (Point, Direction4);
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            if self.current > 3 {
+            if self.current > 2 {
                 return None;
             }
 
-            let nx = self.x as isize + ADJ_FOUR[self.current].0;
-            let ny = self.y as isize + ADJ_FOUR[self.current].1;
             self.direction = self.direction.rotate_clockwise();
+            let nx = self.x as isize + ADJ_FOUR[self.direction as usize].0;
+            let ny = self.y as isize + ADJ_FOUR[self.direction as usize].1;
 
             self.current += 1;
 
@@ -415,7 +446,7 @@ pub struct AdjacentFourDirectional {
 }
 
 impl Iterator for AdjacentFourDirectional {
-    type Item = (Point, Direction);
+    type Item = (Point, Direction4);
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
@@ -426,10 +457,10 @@ impl Iterator for AdjacentFourDirectional {
             let nx = self.x as isize + ADJ_FOUR[self.current].0;
             let ny = self.y as isize + ADJ_FOUR[self.current].1;
             let dir = match self.current {
-                0 => Direction::West,
-                1 => Direction::North,
-                2 => Direction::South,
-                3 => Direction::East,
+                0 => Direction4::North,
+                1 => Direction4::East,
+                2 => Direction4::South,
+                3 => Direction4::West,
                 _ => panic!(),
             };
 

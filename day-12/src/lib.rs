@@ -1,5 +1,5 @@
 use point::Point;
-use point_grid::{Direction, PointGrid};
+use point_grid::{Direction4, PointGrid};
 use shared::*;
 
 extern crate shared;
@@ -24,85 +24,84 @@ fn parse(input: &str) -> PointGrid<u8> {
 struct State {
     pub map: PointGrid<u8>,
     pub visited: PointGrid<bool>,
-    pub queud: PointGrid<bool>,
-    pub connected: Vec<(Point, Direction)>,
-    pub unconnected: Vec<(Point, Direction)>,
 }
 
 struct FenceScore {
     pub current_area: usize,
-    pub current_fences: usize,
+    pub multiplier: usize,
     pub current_id: u8,
 }
 
-pub fn part_1(_input: &str) -> Solution {
-    let grid = parse(_input);
+fn solve<F>(input: &str, visit: F) -> usize
+where
+    F: Fn(Point, &mut State, &mut FenceScore),
+{
+    let grid = parse(input);
     let height = grid.height;
     let width = grid.width;
 
     let mut state = State {
         map: grid,
         visited: PointGrid::empty(false, height, width),
-        queud: PointGrid::empty(false, height, width),
-        connected: Vec::with_capacity(height * width / 100),
-        unconnected: Vec::with_capacity(height * width / 10),
     };
 
     let mut score = FenceScore {
         current_area: 0,
-        current_fences: 0,
+        multiplier: 0,
         current_id: 0,
     };
 
-    state.unconnected.push((Point::new(0, 0), Direction::East));
-
     let mut result = 0;
 
-    while let Some((point, from)) = state.unconnected.pop() {
+    for point in state.map.positions() {
         if state.visited[point] {
             continue;
         }
 
         score.current_id = state.map[point];
         score.current_area = 0;
-        score.current_fences = 0;
+        score.multiplier = 0;
         state.visited[point] = true;
 
-        visit(point, from, &mut state, &mut score);
+        visit(point, &mut state, &mut score);
 
-        while let Some((point, from)) = state.connected.pop() {
-            visit(point, from, &mut state, &mut score);
-        }
-
-        let score = score.current_area * score.current_fences;
+        let score = score.current_area * score.multiplier;
         result += score;
     }
 
     result.into()
 }
 
-fn visit(point: Point, from: Direction, state: &mut State, score: &mut FenceScore) {
-    score.current_area += 1;
+pub fn part_1(_input: &str) -> Solution {
+    solve(_input, initial_fill).into()
+}
 
-    let mut i = 0;
-    for (neighbour, direction) in state.map.adjacent_three_directional(point, from) {
+fn initial_fill(point: Point, state: &mut State, score: &mut FenceScore) {
+    fill(state.map.adjacent_four_directional(point), state, score);
+}
+
+fn fill<I>(iter: I, state: &mut State, score: &mut FenceScore)
+where
+    I: IntoIterator<Item = (Point, Direction4)>,
+{
+    score.current_area += 1;
+    score.multiplier += 4;
+
+    for (neighbour, direction) in iter {
         let is_connected = state.map[neighbour] == score.current_id;
 
-        if !is_connected && !state.queud[neighbour] {
-            state.unconnected.push((neighbour, direction));
-            state.queud[neighbour] = true;
-        } else if is_connected && !state.visited[neighbour] {
-            state.connected.push((neighbour, direction));
-            state.visited[neighbour] = true;
+        if is_connected {
+            score.multiplier -= 1;
+            if !state.visited[neighbour] {
+                state.visited[neighbour] = true;
+                fill(
+                    state.map.adjacent_three_directional(neighbour, direction),
+                    state,
+                    score,
+                );
+            }
         }
-
-        if !is_connected {
-            score.current_fences += 1;
-        }
-        i += 1;
     }
-
-    score.current_fences += 4 - i;
 }
 
 #[cfg(test)]
@@ -123,88 +122,102 @@ mod part_1_tests {
     }
 }
 
-pub fn part_2(_input: &str) -> Solution {
-    let grid = parse(_input);
-    let height = grid.height;
-    let width = grid.width;
-
-    let mut state = State {
-        map: grid,
-        visited: PointGrid::empty(false, height, width),
-        queud: PointGrid::empty(false, height, width),
-        connected: Vec::with_capacity(height * width / 100),
-        unconnected: Vec::with_capacity(height * width / 10),
-    };
-
-    let mut score = FenceScore {
-        current_area: 0,
-        current_fences: 0,
-        current_id: 0,
-    };
-
-    state.unconnected.push((Point::new(0, 0), Direction::East));
-
-    let mut result = 0;
-
-    while let Some((point, from)) = state.unconnected.pop() {
-        if state.visited[point] {
-            continue;
-        }
-
-        score.current_id = state.map[point];
-        score.current_area = 0;
-        score.current_fences = 0;
-        state.visited[point] = true;
-
-        visit_2(point, from, &mut state, &mut score);
-
-        while let Some((point, from)) = state.connected.pop() {
-            visit_2(point, from, &mut state, &mut score);
-        }
-
-        let score = score.current_area * score.current_fences;
-        result += score;
-    }
-
-    result.into()
+fn initial_fill_discounted(point: Point, state: &mut State, score: &mut FenceScore) {
+    fill_discounted(
+        state.map.adjacent_four_directional(point),
+        point,
+        state,
+        score,
+    );
 }
 
-fn visit_2(point: Point, from: Direction, state: &mut State, score: &mut FenceScore) {
+fn fill_discounted<I>(iter: I, point: Point, state: &mut State, score: &mut FenceScore)
+where
+    I: IntoIterator<Item = (Point, Direction4)>,
+{
     score.current_area += 1;
 
-    let mut i = 0;
-    for (neighbour, direction) in state.map.adjacent_three_directional(point, from) {
+    let mut connected: u8 = 0b00011111;
+
+    for (neighbour, direction) in iter {
         let is_connected = state.map[neighbour] == score.current_id;
 
-        if !is_connected && !state.queud[neighbour] {
-            state.unconnected.push((neighbour, direction));
-            state.queud[neighbour] = true;
-        } else if is_connected && !state.visited[neighbour] {
-            state.connected.push((neighbour, direction));
-            state.visited[neighbour] = true;
-        }
+        if is_connected {
+            match direction {
+                Direction4::North => connected &= 0b00011110,
+                Direction4::East => connected &= 0b00011101,
+                Direction4::South => connected &= 0b00011011,
+                Direction4::West => connected &= 0b00010111,
+            }
 
-        if !is_connected {
-            score.current_fences += 1;
+            if !state.visited[neighbour] {
+                state.visited[neighbour] = true;
+                fill_discounted(
+                    state.map.adjacent_four_directional(neighbour),
+                    neighbour,
+                    state,
+                    score,
+                );
+            }
         }
-        i += 1;
     }
 
-    score.current_fences += 4 - i;
+    if connected & 0b00000011 == 0b00000011 {
+        score.multiplier += 1;
+    }
+
+    if connected & 0b00000110 == 0b00000110 {
+        score.multiplier += 1;
+    }
+
+    if connected & 0b00001100 == 0b00001100 {
+        score.multiplier += 1;
+    }
+
+    if connected & 0b00001001 == 0b00001001 {
+        score.multiplier += 1;
+    }
+
+    if let Some(diagonal) = state.map.down_left(point) {
+        if state.map[diagonal] == score.current_id {
+            if connected & 0b00001100 == 0b00000100 {
+                score.multiplier += 1;
+            }
+
+            if connected & 0b00001100 == 0b00001000 {
+                score.multiplier += 1;
+            }
+        }
+    }
+
+    if let Some(diagonal) = state.map.down_right(point) {
+        if state.map[diagonal] == score.current_id {
+            if connected & 0b00000110 == 0b00000100 {
+                score.multiplier += 1;
+            }
+
+            if connected & 0b00000110 == 0b00000010 {
+                score.multiplier += 1;
+            }
+        }
+    }
 }
+
+pub fn part_2(_input: &str) -> Solution {
+    solve(_input, initial_fill_discounted).into()
+}
+
 #[cfg(test)]
 mod part_2_tests {
     use crate::*;
     use test_case::test_case;
 
-    #[test_case(include_str!("_test_1.txt"), 140)]
-    #[test_case(include_str!("_test_2.txt"), 772)]
-    #[test_case(include_str!("_test_3.txt"), 1930)]
+    #[test_case(include_str!("_test_1.txt"), 80)]
     fn example_input(input: &str, expected: usize) {
         assert_eq!(part_2(input), expected.into());
     }
 
-    #[test_case(0)]
+    #[test_case(906606)]
     fn real_input(expected: usize) {
         assert_eq!(part_2(_INPUT), expected.into());
     }

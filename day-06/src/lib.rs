@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use point::Point;
-use point_grid::{Direction, PointGrid};
+use point_grid::{Direction4, PointGrid};
 use shared::*;
 
 extern crate shared;
@@ -44,7 +44,7 @@ fn solve_1(map: PointGrid<Tile>, start: Point) -> usize {
     let mut visited = PointGrid::from_vec(vec![false; map.width * map.height], map.height);
     let mut current = start;
     let mut visited_count = 1;
-    let mut direction = Direction::North;
+    let mut direction = Direction4::North;
     visited[current] = true;
 
     while let Some(next) = map.go(current, direction) {
@@ -92,7 +92,7 @@ fn solve_2(map: PointGrid<Tile>, start: Point) -> usize {
     let mut visited = PointGrid::from_vec(vec![[false; 4]; map.width * map.height], map.height);
     let mut current = start;
     let mut loops = HashSet::new();
-    let mut direction = Direction::North;
+    let mut direction = Direction4::North;
     visited[current][0] = true;
 
     while let Some(next) = map.go(current, direction) {
