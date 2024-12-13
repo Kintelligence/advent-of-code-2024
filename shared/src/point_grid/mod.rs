@@ -120,6 +120,14 @@ impl<T> PointGrid<T> {
         &mut self.vec[self.width * point.y + point.x]
     }
 
+    pub fn index_xy(&self, x: usize, y: usize) -> &T {
+        &self.vec[self.width * y + x]
+    }
+
+    pub fn index_xy_mut(&mut self, x: usize, y: usize) -> &mut T {
+        &mut self.vec[self.width * y + x]
+    }
+
     pub fn is_within_bounds(&mut self, point: Point) -> bool {
         return point.x < self.width && point.y < self.height;
     }
@@ -252,6 +260,26 @@ impl<T> PointGrid<T> {
             width: self.width,
             current: 0,
         }
+    }
+}
+
+impl<T> std::ops::Index<(usize, usize)> for PointGrid<T>
+where
+    T: Clone,
+{
+    fn index(&self, index: (usize, usize)) -> &T {
+        self.index_xy(index.0, index.1)
+    }
+
+    type Output = T;
+}
+
+impl<T> std::ops::IndexMut<(usize, usize)> for PointGrid<T>
+where
+    T: Clone,
+{
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut T {
+        self.index_xy_mut(index.0, index.1)
     }
 }
 
