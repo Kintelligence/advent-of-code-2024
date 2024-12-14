@@ -140,7 +140,7 @@ pub fn day_name(day: u32) -> &'static str {
         11 => "Plutonian Pebbles",
         12 => "Garden Groups",
         13 => "Claw Contraption",
-        14 => "Unnamed",
+        14 => "Restroom Redoubt",
         15 => "Unnamed",
         16 => "Unnamed",
         17 => "Unnamed",
@@ -157,9 +157,9 @@ pub fn day_name(day: u32) -> &'static str {
 pub mod common;
 pub mod grid;
 pub mod ipoint;
+pub mod math;
 pub mod parse;
 pub mod point;
-pub mod point_grid;
 pub mod switching_state;
 pub mod translator;
 pub mod vector_3d;

@@ -1,12 +1,12 @@
+use grid::{Direction, Grid};
 use point::Point;
-use point_grid::{Direction4, PointGrid};
 use shared::*;
 
 extern crate shared;
 
 pub const _INPUT: &'static str = include_str!("_input.txt");
 
-fn parse(input: &str) -> PointGrid<u8> {
+fn parse(input: &str) -> Grid<u8> {
     let mut vec = Vec::new();
     let mut height = 0;
 
@@ -20,12 +20,12 @@ fn parse(input: &str) -> PointGrid<u8> {
         height += 1;
     }
 
-    PointGrid::from_vec(vec, height)
+    Grid::from_vec(vec, height)
 }
 
-fn traverse_1<I>(map: &PointGrid<u8>, iter: I, height: u8, seen: &mut PointGrid<bool>) -> usize
+fn traverse_1<I>(map: &Grid<u8>, iter: I, height: u8, seen: &mut Grid<bool>) -> usize
 where
-    I: Iterator<Item = (Point, Direction4)>,
+    I: Iterator<Item = (Point, Direction)>,
 {
     let mut result = 0;
     let valid_points = iter.filter(|(p, _)| map[*p] == height);
@@ -51,10 +51,10 @@ where
 
 pub fn part_1(_input: &str) -> Solution {
     let map = parse(_input);
-    map.positions()
+    map.points()
         .filter_map(|position| {
             if map[position] == 0 {
-                let mut seen = PointGrid::from_vec(vec![false; map.height * map.width], map.height);
+                let mut seen = Grid::from_vec(vec![false; map.height * map.width], map.height);
                 return Some(traverse_1(
                     &map,
                     map.adjacent_four_directional(position),
@@ -88,9 +88,9 @@ mod part_1_tests {
     }
 }
 
-fn traverse_2<I>(map: &PointGrid<u8>, iter: I, height: u8) -> usize
+fn traverse_2<I>(map: &Grid<u8>, iter: I, height: u8) -> usize
 where
-    I: Iterator<Item = (Point, Direction4)>,
+    I: Iterator<Item = (Point, Direction)>,
 {
     let valid_points = iter.filter(|(p, _)| map[*p] == height);
     if height >= 9 {
@@ -106,7 +106,7 @@ where
 
 pub fn part_2(_input: &str) -> Solution {
     let map = parse(_input);
-    map.positions()
+    map.points()
         .filter_map(|position| {
             if map[position] == 0 {
                 return Some(traverse_2(&map, map.adjacent_four_directional(position), 1));

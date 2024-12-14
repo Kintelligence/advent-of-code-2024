@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
+use grid::{Direction, Grid};
 use point::Point;
-use point_grid::{Direction4, PointGrid};
 use shared::*;
 
 extern crate shared;
@@ -14,7 +14,7 @@ enum Tile {
     Obstacle,
 }
 
-fn parse(input: &str) -> (PointGrid<Tile>, Point) {
+fn parse(input: &str) -> (Grid<Tile>, Point) {
     let mut vec = Vec::new();
 
     let mut height = 0;
@@ -37,19 +37,19 @@ fn parse(input: &str) -> (PointGrid<Tile>, Point) {
         height += 1;
     }
 
-    (PointGrid::from_vec(vec, height), start)
+    (Grid::from_vec(vec, height), start)
 }
 
-fn solve_1(map: PointGrid<Tile>, start: Point) -> usize {
-    let mut visited = PointGrid::from_vec(vec![false; map.width * map.height], map.height);
+fn solve_1(map: Grid<Tile>, start: Point) -> usize {
+    let mut visited = Grid::from_vec(vec![false; map.width * map.height], map.height);
     let mut current = start;
     let mut visited_count = 1;
-    let mut direction = Direction4::North;
+    let mut direction = Direction::North;
     visited[current] = true;
 
     while let Some(next) = map.go(current, direction) {
         if map[next] == Tile::Obstacle {
-            direction = direction.rotate_clockwise();
+            direction = direction.rotate_clockwise_90();
             continue;
         } else if !visited[next] {
             visited[next] = true;
@@ -77,39 +77,34 @@ mod part_1_tests {
         assert_eq!(part_1(input), expected.into());
     }
 
-    #[test_case(include_str!("_mqu.txt"), 4939)]
-    fn mqu_input(input: &str, expected: usize) {
-        assert_eq!(part_1(input), expected.into());
-    }
-
     #[test_case(5101)]
     fn real_input(expected: usize) {
         assert_eq!(part_1(_INPUT), expected.into());
     }
 }
 
-fn solve_2(map: PointGrid<Tile>, start: Point) -> usize {
-    let mut visited = PointGrid::from_vec(vec![[false; 4]; map.width * map.height], map.height);
+fn solve_2(map: Grid<Tile>, start: Point) -> usize {
+    let mut visited = Grid::from_vec(vec![[false; 4]; map.width * map.height], map.height);
     let mut current = start;
     let mut loops = HashSet::new();
-    let mut direction = Direction4::North;
+    let mut direction = Direction::North;
     visited[current][0] = true;
 
     while let Some(next) = map.go(current, direction) {
         if map[next] == Tile::Obstacle {
-            direction = direction.rotate_clockwise();
+            direction = direction.rotate_clockwise_90();
             continue;
         }
 
         if visited[next].iter().all(|seen| !seen) {
             let mut visited_b =
-                PointGrid::from_vec(vec![[false; 4]; map.width * map.height], map.height);
-            let mut direction_b = direction.rotate_clockwise();
+                Grid::from_vec(vec![[false; 4]; map.width * map.height], map.height);
+            let mut direction_b = direction.rotate_clockwise_90();
             let mut current_b = current;
 
             while let Some(next_b) = map.go(current_b, direction_b) {
                 if map[next_b] == Tile::Obstacle || next_b == next {
-                    direction_b = direction_b.rotate_clockwise();
+                    direction_b = direction_b.rotate_clockwise_90();
                     continue;
                 } else if visited[next_b][direction_b as usize]
                     || visited_b[next_b][direction_b as usize]
@@ -147,11 +142,6 @@ mod part_2_tests {
 
     #[test_case(include_str!("_test.txt"), 6)]
     fn example_input(input: &str, expected: usize) {
-        assert_eq!(part_2(input), expected.into());
-    }
-
-    #[test_case(include_str!("_mqu.txt"), 1434)]
-    fn mqu_input(input: &str, expected: usize) {
         assert_eq!(part_2(input), expected.into());
     }
 

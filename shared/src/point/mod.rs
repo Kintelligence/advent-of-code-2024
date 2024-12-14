@@ -1,7 +1,15 @@
 use core::fmt;
-use std::ops::{Add, Div, Mul, Sub};
+use std::{
+    iter::Sum,
+    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign},
+};
 
-use crate::{common::Modulo, ipoint::IPoint};
+use forward_ref::{forward_ref_binop, forward_ref_op_assign};
+
+use crate::{
+    common::{Modulo, ModuloAssign},
+    ipoint::IPoint,
+};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, PartialOrd, Ord, Hash)]
 pub struct Point {
@@ -48,17 +56,6 @@ impl Point {
     }
 }
 
-impl Add for &Point {
-    type Output = Point;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Point {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-        }
-    }
-}
-
 impl Add for Point {
     type Output = Point;
 
@@ -70,27 +67,14 @@ impl Add for Point {
     }
 }
 
-impl Add<Point> for &Point {
-    type Output = Point;
-
-    fn add(self, rhs: Point) -> Self::Output {
-        Point {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-        }
+impl AddAssign<Point> for Point {
+    fn add_assign(&mut self, rhs: Point) {
+        self.x += rhs.x;
+        self.y += rhs.y;
     }
 }
-
-impl Add<&Point> for Point {
-    type Output = Point;
-
-    fn add(self, rhs: &Point) -> Self::Output {
-        Point {
-            x: self.x + rhs.x,
-            y: self.y + rhs.y,
-        }
-    }
-}
+forward_ref_binop!(impl Add, add for Point, Point);
+forward_ref_op_assign!(impl AddAssign, add_assign for Point, Point);
 
 impl Sub for Point {
     type Output = Point;
@@ -103,38 +87,15 @@ impl Sub for Point {
     }
 }
 
-impl Sub for &Point {
-    type Output = Point;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        Point {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-        }
+impl SubAssign<Point> for Point {
+    fn sub_assign(&mut self, rhs: Point) {
+        self.x -= rhs.x;
+        self.y -= rhs.y;
     }
 }
 
-impl Sub<Point> for &Point {
-    type Output = Point;
-
-    fn sub(self, rhs: Point) -> Self::Output {
-        Point {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-        }
-    }
-}
-
-impl Sub<&Point> for Point {
-    type Output = Point;
-
-    fn sub(self, rhs: &Point) -> Self::Output {
-        Point {
-            x: self.x - rhs.x,
-            y: self.y - rhs.y,
-        }
-    }
-}
+forward_ref_binop!(impl Sub, sub for Point, Point);
+forward_ref_op_assign!(impl SubAssign, sub_assign for Point, Point);
 
 impl Mul<usize> for Point {
     type Output = Point;
@@ -147,38 +108,15 @@ impl Mul<usize> for Point {
     }
 }
 
-impl Mul<usize> for &Point {
-    type Output = Point;
-
-    fn mul(self, rhs: usize) -> Self::Output {
-        Point {
-            x: self.x * rhs,
-            y: self.y * rhs,
-        }
+impl MulAssign<usize> for Point {
+    fn mul_assign(&mut self, rhs: usize) {
+        self.x *= rhs;
+        self.y *= rhs;
     }
 }
 
-impl Mul<&usize> for Point {
-    type Output = Point;
-
-    fn mul(self, rhs: &usize) -> Self::Output {
-        Point {
-            x: self.x * rhs,
-            y: self.y * rhs,
-        }
-    }
-}
-
-impl Mul<&usize> for &Point {
-    type Output = Point;
-
-    fn mul(self, rhs: &usize) -> Self::Output {
-        Point {
-            x: self.x * rhs,
-            y: self.y * rhs,
-        }
-    }
-}
+forward_ref_binop!(impl Mul, mul for Point, usize);
+forward_ref_op_assign!(impl MulAssign, mul_assign for Point, usize);
 
 impl Div<usize> for Point {
     type Output = Point;
@@ -191,38 +129,15 @@ impl Div<usize> for Point {
     }
 }
 
-impl Div<usize> for &Point {
-    type Output = Point;
-
-    fn div(self, rhs: usize) -> Self::Output {
-        Point {
-            x: self.x / rhs,
-            y: self.y / rhs,
-        }
+impl DivAssign<usize> for Point {
+    fn div_assign(&mut self, rhs: usize) {
+        self.x /= rhs;
+        self.y /= rhs;
     }
 }
 
-impl Div<&usize> for Point {
-    type Output = Point;
-
-    fn div(self, rhs: &usize) -> Self::Output {
-        Point {
-            x: self.x / rhs,
-            y: self.y / rhs,
-        }
-    }
-}
-
-impl Div<&usize> for &Point {
-    type Output = Point;
-
-    fn div(self, rhs: &usize) -> Self::Output {
-        Point {
-            x: self.x / rhs,
-            y: self.y / rhs,
-        }
-    }
-}
+forward_ref_binop!(impl Div, div for Point, usize);
+forward_ref_op_assign!(impl DivAssign, div_assign for Point, usize);
 
 impl Modulo<usize> for Point {
     type Output = Point;
@@ -235,38 +150,15 @@ impl Modulo<usize> for Point {
     }
 }
 
-impl Modulo<usize> for &Point {
-    type Output = Point;
-
-    fn modulo(self, rhs: usize) -> Self::Output {
-        Point {
-            x: self.x % rhs,
-            y: self.y % rhs,
-        }
+impl ModuloAssign<usize> for Point {
+    fn modulo_assign(&mut self, rhs: usize) {
+        self.x %= rhs;
+        self.y %= rhs;
     }
 }
 
-impl Modulo<&usize> for Point {
-    type Output = Point;
-
-    fn modulo(self, rhs: &usize) -> Self::Output {
-        Point {
-            x: self.x % rhs,
-            y: self.y % rhs,
-        }
-    }
-}
-
-impl Modulo<&usize> for &Point {
-    type Output = Point;
-
-    fn modulo(self, rhs: &usize) -> Self::Output {
-        Point {
-            x: self.x % rhs,
-            y: self.y % rhs,
-        }
-    }
-}
+forward_ref_binop!(impl Modulo, modulo for Point, usize);
+forward_ref_op_assign!(impl ModuloAssign, modulo_assign for Point, usize);
 
 impl Mul<Point> for Point {
     type Output = Point;
@@ -279,38 +171,15 @@ impl Mul<Point> for Point {
     }
 }
 
-impl Mul<Point> for &Point {
-    type Output = Point;
-
-    fn mul(self, rhs: Point) -> Self::Output {
-        Point {
-            x: self.x * rhs.x,
-            y: self.y * rhs.y,
-        }
+impl MulAssign<Point> for Point {
+    fn mul_assign(&mut self, rhs: Point) {
+        self.x *= rhs.x;
+        self.y *= rhs.y;
     }
 }
 
-impl Mul<&Point> for Point {
-    type Output = Point;
-
-    fn mul(self, rhs: &Point) -> Self::Output {
-        Point {
-            x: self.x * rhs.x,
-            y: self.y * rhs.y,
-        }
-    }
-}
-
-impl Mul<&Point> for &Point {
-    type Output = Point;
-
-    fn mul(self, rhs: &Point) -> Self::Output {
-        Point {
-            x: self.x * rhs.x,
-            y: self.y * rhs.y,
-        }
-    }
-}
+forward_ref_binop!(impl Mul, mul for Point, Point);
+forward_ref_op_assign!(impl MulAssign, mul_assign for Point, Point);
 
 impl Div<Point> for Point {
     type Output = Point;
@@ -323,39 +192,17 @@ impl Div<Point> for Point {
     }
 }
 
-impl Div<Point> for &Point {
-    type Output = Point;
-
-    fn div(self, rhs: Point) -> Self::Output {
-        Point {
-            x: self.x / rhs.x,
-            y: self.y / rhs.y,
-        }
+impl DivAssign<Point> for Point {
+    fn div_assign(&mut self, rhs: Point) {
+        self.x /= rhs.x;
+        self.y /= rhs.y;
     }
 }
 
-impl Div<&Point> for Point {
-    type Output = Point;
+forward_ref_binop!(impl Div, div for Point, Point);
+forward_ref_op_assign!(impl DivAssign, div_assign for Point, Point);
 
-    fn div(self, rhs: &Point) -> Self::Output {
-        Point {
-            x: self.x / rhs.x,
-            y: self.y / rhs.y,
-        }
-    }
-}
-
-impl Div<&Point> for &Point {
-    type Output = Point;
-
-    fn div(self, rhs: &Point) -> Self::Output {
-        Point {
-            x: self.x / rhs.x,
-            y: self.y / rhs.y,
-        }
-    }
-}
-impl Modulo<Point> for &Point {
+impl Modulo<Point> for Point {
     type Output = Point;
 
     fn modulo(self, rhs: Point) -> Self::Output {
@@ -366,24 +213,18 @@ impl Modulo<Point> for &Point {
     }
 }
 
-impl Modulo<&Point> for Point {
-    type Output = Point;
-
-    fn modulo(self, rhs: &Point) -> Self::Output {
-        Point {
-            x: self.x % rhs.x,
-            y: self.y % rhs.y,
-        }
+impl ModuloAssign<Point> for Point {
+    fn modulo_assign(&mut self, rhs: Point) {
+        self.x %= rhs.x;
+        self.y %= rhs.y;
     }
 }
 
-impl Modulo<&Point> for &Point {
-    type Output = Point;
+forward_ref_binop!(impl Modulo, modulo for Point, Point);
+forward_ref_op_assign!(impl ModuloAssign, modulo_assign for Point, Point);
 
-    fn modulo(self, rhs: &Point) -> Self::Output {
-        Point {
-            x: self.x % rhs.x,
-            y: self.y % rhs.y,
-        }
+impl Sum for Point {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Point::new(0, 0), |acc, item| acc + item)
     }
 }
