@@ -20,7 +20,7 @@ fn parse(input: &str) -> Grid<u8> {
         height += 1;
     }
 
-    Grid::from_vec(vec, height)
+    Grid::from(vec, height)
 }
 
 fn traverse_1<I>(map: &Grid<u8>, iter: I, height: u8, seen: &mut Grid<bool>) -> usize
@@ -54,7 +54,7 @@ pub fn part_1(_input: &str) -> Solution {
     map.points()
         .filter_map(|position| {
             if map[position] == 0 {
-                let mut seen = Grid::from_vec(vec![false; map.height * map.width], map.height);
+                let mut seen = Grid::from(vec![false; map.height * map.width], map.height);
                 return Some(traverse_1(
                     &map,
                     map.adjacent_four_directional(position),

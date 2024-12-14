@@ -34,7 +34,7 @@ fn parse(input: &str) -> Grid<Letter> {
         }
     }
 
-    Grid::from_vec(vec, height)
+    Grid::from(vec, height)
 }
 
 const LETTERS: [Letter; 3] = [Letter::M, Letter::A, Letter::S];

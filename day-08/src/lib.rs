@@ -40,7 +40,7 @@ fn parse(input: &str) -> (Vec<Vec<IPoint>>, usize, usize) {
 
 pub fn part_1(_input: &str) -> Solution {
     let (sets, width, height) = parse(_input);
-    let mut map = Grid::from_vec(vec![false; width * height], height);
+    let mut map = Grid::from(vec![false; width * height], height);
     let mut antinodes: usize = 0;
 
     for set in sets {
@@ -96,7 +96,7 @@ mod part_1_tests {
 
 pub fn part_2(_input: &str) -> Solution {
     let (sets, width, height) = parse(_input);
-    let mut map = Grid::from_vec(vec![false; width * height], height);
+    let mut map = Grid::from(vec![false; width * height], height);
     let mut antinodes: usize = 0;
 
     for set in sets {

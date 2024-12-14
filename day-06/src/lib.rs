@@ -37,11 +37,11 @@ fn parse(input: &str) -> (Grid<Tile>, Point) {
         height += 1;
     }
 
-    (Grid::from_vec(vec, height), start)
+    (Grid::from(vec, height), start)
 }
 
 fn solve_1(map: Grid<Tile>, start: Point) -> usize {
-    let mut visited = Grid::from_vec(vec![false; map.width * map.height], map.height);
+    let mut visited = Grid::from(vec![false; map.width * map.height], map.height);
     let mut current = start;
     let mut visited_count = 1;
     let mut direction = Direction::North;
@@ -84,7 +84,7 @@ mod part_1_tests {
 }
 
 fn solve_2(map: Grid<Tile>, start: Point) -> usize {
-    let mut visited = Grid::from_vec(vec![[false; 4]; map.width * map.height], map.height);
+    let mut visited = Grid::from(vec![[false; 4]; map.width * map.height], map.height);
     let mut current = start;
     let mut loops = HashSet::new();
     let mut direction = Direction::North;
@@ -97,8 +97,7 @@ fn solve_2(map: Grid<Tile>, start: Point) -> usize {
         }
 
         if visited[next].iter().all(|seen| !seen) {
-            let mut visited_b =
-                Grid::from_vec(vec![[false; 4]; map.width * map.height], map.height);
+            let mut visited_b = Grid::from(vec![[false; 4]; map.width * map.height], map.height);
             let mut direction_b = direction.rotate_clockwise_90();
             let mut current_b = current;
 

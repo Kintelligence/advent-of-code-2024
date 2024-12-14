@@ -18,7 +18,7 @@ fn parse(input: &str) -> Grid<u8> {
         height += 1;
     }
 
-    Grid::from_vec(vec, height)
+    Grid::from(vec, height)
 }
 
 struct State {
@@ -42,7 +42,7 @@ where
 
     let mut state = State {
         map: grid,
-        visited: Grid::empty(false, height, width),
+        visited: Grid::filled(false, height, width),
     };
 
     let mut score = FenceScore {

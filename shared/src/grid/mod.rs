@@ -135,7 +135,7 @@ impl<T> Grid<T>
 where
     T: Clone,
 {
-    pub fn empty(fill: T, height: usize, width: usize) -> Self {
+    pub fn filled(fill: T, height: usize, width: usize) -> Self {
         Self {
             vec: vec![fill; height * width],
             width,
@@ -145,7 +145,7 @@ where
 }
 
 impl<T> Grid<T> {
-    pub fn from_vec(vec: Vec<T>, height: usize) -> Self {
+    pub fn from(vec: Vec<T>, height: usize) -> Self {
         Self {
             width: vec.len() / height,
             vec,
