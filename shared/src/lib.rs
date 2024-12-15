@@ -154,12 +154,8 @@ pub fn day_name(day: u32) -> &'static str {
     }
 }
 
-pub mod common;
 pub mod grid;
-pub mod ipoint;
 pub mod math;
+pub mod misc;
 pub mod parse;
-pub mod point;
-pub mod switching_state;
-pub mod translator;
-pub mod vector_3d;
+pub mod points;

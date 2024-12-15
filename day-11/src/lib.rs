@@ -1,6 +1,5 @@
+use misc::{switching_state::SwitchingState, translator::Translator};
 use std::iter::from_fn;
-use switching_state::SwitchingState;
-use translator::Translator;
 
 use parse::Parsable;
 use shared::*;

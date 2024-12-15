@@ -6,7 +6,10 @@ use std::{
 
 use forward_ref::{forward_ref_binop, forward_ref_op_assign};
 
-use crate::common::{Absolute, Modulo, ModuloAssign, ModuloPositive, ModuloPositiveAssign};
+use super::{
+    point::Point,
+    traits::{Absolute, Modulo, ModuloAssign, ModuloPositive, ModuloPositiveAssign},
+};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, PartialOrd, Ord, Hash)]
 pub struct IPoint {
@@ -17,6 +20,15 @@ pub struct IPoint {
 impl std::fmt::Display for IPoint {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "({},{})", self.x, self.y)
+    }
+}
+
+impl From<Point> for IPoint {
+    fn from(value: Point) -> Self {
+        Self {
+            x: value.x as isize,
+            y: value.y as isize,
+        }
     }
 }
 

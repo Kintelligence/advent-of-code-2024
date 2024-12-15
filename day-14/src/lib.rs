@@ -1,7 +1,9 @@
-use common::{Absolute, ModuloPositive};
-use ipoint::IPoint;
 use math::solve_linear_diophantine;
 use parse::Parsable;
+use points::{
+    ipoint::IPoint,
+    traits::{Absolute, ModuloPositive},
+};
 use shared::*;
 use std::iter::from_fn;
 

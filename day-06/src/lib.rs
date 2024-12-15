@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use grid::{Direction, Grid};
-use point::Point;
+use grid::{directions::Direction, Grid};
+use points::point::Point;
 use shared::*;
 
 extern crate shared;

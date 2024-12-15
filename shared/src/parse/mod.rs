@@ -1,5 +1,3 @@
-use crate::{ipoint::IPoint, point::Point};
-
 pub trait ToDigit {
     fn to_digit(&self) -> Option<u8>;
 }
@@ -19,24 +17,6 @@ pub trait Parsable<T>: Iterator {
 
 pub trait ParsableStrict<T>: Iterator {
     fn next_number_strict(&mut self) -> (Option<T>, Option<u8>);
-}
-
-impl<T: Iterator<Item = u8>> Parsable<Point> for T {
-    fn next_number(&mut self) -> Option<Point> {
-        if let Some((x, y)) = self.next_number().zip(self.next_number()) {
-            return Some(Point::new(x, y));
-        }
-        None
-    }
-}
-
-impl<T: Iterator<Item = u8>> Parsable<IPoint> for T {
-    fn next_number(&mut self) -> Option<IPoint> {
-        if let Some((x, y)) = self.next_number().zip(self.next_number()) {
-            return Some(IPoint::new(x, y));
-        }
-        None
-    }
 }
 
 macro_rules! parsable_number {

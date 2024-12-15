@@ -4,12 +4,11 @@ use std::{
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign},
 };
 
-use forward_ref::{forward_ref_binop, forward_ref_op_assign};
-
-use crate::{
-    common::{Modulo, ModuloAssign},
-    ipoint::IPoint,
+use super::{
+    super::points::ipoint::IPoint,
+    traits::{Modulo, ModuloAssign},
 };
+use forward_ref::{forward_ref_binop, forward_ref_op_assign};
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, PartialOrd, Ord, Hash)]
 pub struct Point {
@@ -23,16 +22,20 @@ impl std::fmt::Display for Point {
     }
 }
 
+impl TryFrom<IPoint> for Point {
+    type Error = &'static str;
+
+    fn try_from(value: IPoint) -> Result<Self, Self::Error> {
+        if value.x >= 0 && value.y >= 0 {
+            return Ok(Point::new(value.x as usize, value.y as usize));
+        }
+        Err("Unable to convert negative IPoint to Point")
+    }
+}
+
 impl Point {
     pub fn new(x: usize, y: usize) -> Self {
         Point { x, y }
-    }
-
-    pub fn from(ipoint: IPoint) -> Option<Self> {
-        if ipoint.x >= 0 && ipoint.y >= 0 {
-            return Some(Point::new(ipoint.x as usize, ipoint.y as usize));
-        }
-        None
     }
 
     pub fn checked_sub(&self, rhs: Self) -> Option<Self> {
