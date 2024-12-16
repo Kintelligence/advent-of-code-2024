@@ -192,6 +192,15 @@ fn parse_and_graph(input: &str) -> (usize, usize, Vec<Node>, Vec<Connection>) {
         end_point,
     );
 
+    //println!("{}", map.print_bool());
+
+    let mut map: Grid<Option<u8>> = map.same_size_with(None);
+    for (&point, &node) in translator.map.iter() {
+        map[point] = Some(node as u8);
+    }
+
+    //println!("{}", map.print_option_u8(1));
+
     let end = translator.translate(end_point);
     (start, end, nodes, connections)
 }
@@ -346,11 +355,11 @@ fn fill_all_shortest_paths(
     nodes: &Vec<Node>,
     connections: &Vec<Connection>,
 ) -> usize {
-    let mut costs = vec![usize::MAX; nodes.len()];
+    let mut costs = vec![[usize::MAX; 4]; nodes.len()];
     let mut queue = BinaryHeap::new();
     let mut visited: Vec<usize> = Vec::new();
 
-    costs[start] = 0;
+    costs[start][Direction::East as usize] = 0;
     queue.push(VisitState::new(start, 0, Direction::East, Vec::new()));
     let mut lowest_cost: Option<usize> = None;
 
@@ -373,7 +382,7 @@ fn fill_all_shortest_paths(
             visited.append(&mut state.visited);
         }
 
-        if costs[state.id] < state.cost {
+        if costs[state.id][state.direction as usize] < state.cost {
             continue;
         }
 
@@ -402,10 +411,10 @@ fn fill_all_shortest_paths(
                 path_cost += 1000;
             }
 
-            if path_cost >= costs[to] {
+            if path_cost >= costs[to][to_direction as usize] {
                 continue;
             }
-            costs[state.id] = path_cost;
+            costs[state.id][to_direction as usize] = path_cost;
 
             let mut visited = state.visited.clone();
             visited.push(*path);
@@ -434,7 +443,6 @@ fn fill_all_shortest_paths(
             result += 1;
         }
     }
-
     result
 }
 
@@ -445,6 +453,7 @@ mod part_2_tests {
 
     #[test_case(include_str!("_test_1.txt"), 45)]
     #[test_case(include_str!("_test_2.txt"), 64)]
+    #[test_case(include_str!("_test_4.txt"), 12)]
     fn example_input(input: &str, expected: usize) {
         assert_eq!(part_2(input), expected.into());
     }

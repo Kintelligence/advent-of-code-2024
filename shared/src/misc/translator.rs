@@ -6,7 +6,7 @@ where
     T: Hash,
     T: Eq,
 {
-    map: HashMap<T, usize>,
+    pub map: HashMap<T, usize>,
     next_id: usize,
 }
 
