@@ -31,6 +31,17 @@ impl<T> Grid<T> {
         }
     }
 
+    pub fn same_size_with<TNew>(&self, fill: TNew) -> Grid<TNew>
+    where
+        TNew: Clone,
+    {
+        Grid {
+            vec: vec![fill; self.height * self.width],
+            width: self.width,
+            height: self.height,
+        }
+    }
+
     pub fn new(vec: Vec<T>, width: usize, height: usize) -> Self {
         Self { vec, width, height }
     }

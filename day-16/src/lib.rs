@@ -21,7 +21,7 @@ struct Connection {
     a_id: usize,
     b_id: usize,
     cost: usize,
-    visits: Vec<Point>,
+    length: usize,
 }
 
 fn parse(input: &str) -> (Grid<bool>, Point, Point) {
@@ -81,7 +81,7 @@ fn graph(
         }) {
             continue;
         }
-        if let Some((next, cost, next_direction, visits)) =
+        if let Some((next, cost, next_direction, length)) =
             travel_to_next_junction(map, point, travel_direction, start_position, end_position)
         {
             if next == point {
@@ -97,7 +97,7 @@ fn graph(
                 b_direction: next_direction.reverse(),
                 b_id: next_id,
                 cost,
-                visits,
+                length,
             });
 
             nodes[id].paths.push(next_connection_id);
@@ -132,14 +132,13 @@ fn travel_to_next_junction(
     mut current_direction: Direction,
     start_position: Point,
     end_position: Point,
-) -> Option<(Point, usize, Direction, Vec<Point>)> {
+) -> Option<(Point, usize, Direction, usize)> {
     let mut cost = 0;
-    let mut points = vec![current_point];
+    let mut points = 0;
     if let Some(next) = map.go_if_true(current_point, current_direction) {
         current_point = next;
         loop {
             if current_point == start_position || current_point == end_position {
-                points.push(current_point);
                 return Some((current_point, cost + 1, current_direction, points));
             }
 
@@ -149,7 +148,6 @@ fn travel_to_next_junction(
                     if next.is_none() {
                         next = Some((next_point, next_direction));
                     } else {
-                        points.push(current_point);
                         return Some((current_point, cost + 1, current_direction, points));
                     }
                 }
@@ -158,10 +156,9 @@ fn travel_to_next_junction(
             if let Some((next_point, next_direction)) = next {
                 cost += 1;
                 if current_direction != next_direction {
-                    points.push(current_point);
                     cost += 1000;
                 }
-
+                points += 1;
                 current_point = next_point;
                 current_direction = next_direction;
             } else {
@@ -358,6 +355,12 @@ fn fill_all_shortest_paths(
     let mut lowest_cost: Option<usize> = None;
 
     while let Some(mut state) = queue.pop() {
+        if let Some(cost) = lowest_cost {
+            if state.cost > cost {
+                break;
+            }
+        }
+
         if state.id == end {
             if let Some(cost) = lowest_cost {
                 if cost < state.cost {
@@ -411,29 +414,24 @@ fn fill_all_shortest_paths(
         }
     }
 
-    let mut visited_edges = HashSet::default();
-    let mut visited_segments = HashSet::default();
+    let mut visited_nodes = HashSet::default();
+    let mut visited_connections = HashSet::default();
 
     let mut result = 0;
     for id in visited {
         let connection = &connections[id];
-        for segment in connection.visits.windows(2) {
-            let a = segment[0];
-            let b = segment[1];
+        if !visited_connections.contains(&id) {
+            visited_connections.insert(id);
+            result += connection.length;
+        }
 
-            let segment_id = if a > b { (a, b) } else { (b, a) };
-            if !visited_segments.contains(&segment_id) {
-                visited_segments.insert(segment_id);
-                if !visited_edges.contains(&a) {
-                    visited_edges.insert(a);
-                    result += 1;
-                }
-                if !visited_edges.contains(&b) {
-                    visited_edges.insert(b);
-                    result += 1;
-                }
-                result += a.distance_to(b) - 1;
-            }
+        if !visited_nodes.contains(&connection.a_id) {
+            visited_nodes.insert(connection.a_id);
+            result += 1;
+        }
+        if !visited_nodes.contains(&connection.b_id) {
+            visited_nodes.insert(connection.b_id);
+            result += 1;
         }
     }
 
