@@ -11,16 +11,17 @@ pub const _INPUT: &'static str = include_str!("_input.txt");
 
 #[derive(Debug)]
 struct Node {
-    paths: Vec<Path>,
+    paths: Vec<usize>,
 }
 
 #[derive(Debug)]
-struct Path {
-    start_direction: Direction,
-    end_direction: Direction,
-    destination: usize,
+struct Connection {
+    a_direction: Direction,
+    b_direction: Direction,
+    a_id: usize,
+    b_id: usize,
     cost: usize,
-    visited: Vec<Point>,
+    visits: Vec<Point>,
 }
 
 fn parse(input: &str) -> (Grid<bool>, Point, Point) {
@@ -60,6 +61,7 @@ fn graph(
     visited: &mut Vec<bool>,
     translator: &mut Translator<Point>,
     nodes: &mut Vec<Node>,
+    connections: &mut Vec<Connection>,
     start_position: Point,
     end_position: Point,
 ) {
@@ -70,14 +72,16 @@ fn graph(
     visited[id] = true;
 
     for travel_direction in current_direction.reverse().other_cardinals() {
-        if nodes[id]
-            .paths
-            .iter()
-            .any(|path| path.start_direction == travel_direction)
-        {
+        if nodes[id].paths.iter().any(|path| {
+            let connection = &connections[*path];
+            if connection.a_id == id {
+                return connection.a_direction == travel_direction;
+            }
+            return connection.b_direction == travel_direction;
+        }) {
             continue;
         }
-        if let Some((next, cost, next_direction, points)) =
+        if let Some((next, cost, next_direction, visits)) =
             travel_to_next_junction(map, point, travel_direction, start_position, end_position)
         {
             if next == point {
@@ -85,29 +89,25 @@ fn graph(
             }
 
             let next_id = translator.translate(next);
+            let next_connection_id = connections.len();
 
-            nodes[id].paths.push(Path {
-                start_direction: travel_direction,
-                end_direction: next_direction,
-                destination: next_id,
+            connections.push(Connection {
+                a_direction: travel_direction,
+                a_id: id,
+                b_direction: next_direction.reverse(),
+                b_id: next_id,
                 cost,
-                visited: points.clone(),
+                visits,
             });
 
-            let reverse_path = Path {
-                start_direction: next_direction.reverse(),
-                end_direction: travel_direction.reverse(),
-                destination: id,
-                cost,
-                visited: points,
-            };
+            nodes[id].paths.push(next_connection_id);
 
             if nodes.len() == next_id {
                 nodes.push(Node {
-                    paths: vec![reverse_path],
+                    paths: vec![next_connection_id],
                 });
             } else {
-                nodes[next_id].paths.push(reverse_path);
+                nodes[next_id].paths.push(next_connection_id);
             }
 
             graph(
@@ -118,6 +118,7 @@ fn graph(
                 visited,
                 translator,
                 nodes,
+                connections,
                 start_position,
                 end_position,
             );
@@ -171,13 +172,16 @@ fn travel_to_next_junction(
     None
 }
 
-fn parse_and_graph(input: &str) -> (usize, usize, Vec<Node>) {
+fn parse_and_graph(input: &str) -> (usize, usize, Vec<Node>, Vec<Connection>) {
     let (map, start_point, end_point) = parse(input);
     let mut translator = Translator::new();
     let mut visited = vec![false; map.height * map.width];
     let start = translator.translate(start_point);
     let start_node = Node { paths: Vec::new() };
+
     let mut nodes = vec![start_node];
+    let mut connections = Vec::new();
+
     graph(
         &map,
         start_point,
@@ -186,17 +190,18 @@ fn parse_and_graph(input: &str) -> (usize, usize, Vec<Node>) {
         &mut visited,
         &mut translator,
         &mut nodes,
+        &mut connections,
         start_point,
         end_point,
     );
 
     let end = translator.translate(end_point);
-    (start, end, nodes)
+    (start, end, nodes, connections)
 }
 
 pub fn part_1(_input: &str) -> Solution {
-    let (start, end, nodes) = parse_and_graph(_input);
-    find_shortest_path(start, end, &nodes).into()
+    let (start, end, nodes, connections) = parse_and_graph(_input);
+    find_shortest_path(start, end, &nodes, &connections).into()
 }
 
 #[derive(PartialEq, Eq)]
@@ -228,7 +233,12 @@ impl Ord for State {
     }
 }
 
-fn find_shortest_path(start: usize, end: usize, nodes: &Vec<Node>) -> usize {
+fn find_shortest_path(
+    start: usize,
+    end: usize,
+    nodes: &Vec<Node>,
+    connections: &Vec<Connection>,
+) -> usize {
     let mut costs = vec![usize::MAX; nodes.len()];
     let mut queue = BinaryHeap::new();
 
@@ -245,20 +255,35 @@ fn find_shortest_path(start: usize, end: usize, nodes: &Vec<Node>) -> usize {
         }
 
         for path in nodes[state.id].paths.iter() {
-            if path.start_direction == state.direction.reverse() {
+            let connection = &connections[*path];
+            let (from_direction, to_direction, to) = if connection.a_id == state.id {
+                (
+                    connection.a_direction,
+                    connection.b_direction.reverse(),
+                    connection.b_id,
+                )
+            } else {
+                (
+                    connection.b_direction,
+                    connection.a_direction.reverse(),
+                    connection.a_id,
+                )
+            };
+
+            if from_direction == state.direction.reverse() {
                 continue;
             }
 
-            let mut path_cost = state.cost + path.cost;
-            if path.start_direction != state.direction {
+            let mut path_cost = state.cost + connection.cost;
+            if from_direction != state.direction {
                 path_cost += 1000;
             }
 
-            if path_cost >= costs[path.destination] {
+            if path_cost >= costs[to] {
                 continue;
             }
             costs[state.id] = path_cost;
-            queue.push(State::new(path.destination, path_cost, path.end_direction));
+            queue.push(State::new(to, path_cost, to_direction));
         }
     }
 
@@ -283,8 +308,8 @@ mod part_1_tests {
 }
 
 pub fn part_2(_input: &str) -> Solution {
-    let (start, end, nodes) = parse_and_graph(_input);
-    fill_all_shortest_paths(start, end, &nodes).into()
+    let (start, end, nodes, connections) = parse_and_graph(_input);
+    fill_all_shortest_paths(start, end, &nodes, &connections).into()
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -292,11 +317,11 @@ struct VisitState {
     cost: usize,
     id: usize,
     direction: Direction,
-    visited: Vec<Vec<Point>>,
+    visited: Vec<usize>,
 }
 
 impl VisitState {
-    pub fn new(id: usize, cost: usize, direction: Direction, visited: Vec<Vec<Point>>) -> Self {
+    pub fn new(id: usize, cost: usize, direction: Direction, visited: Vec<usize>) -> Self {
         Self {
             id,
             cost,
@@ -318,16 +343,21 @@ impl PartialOrd for VisitState {
     }
 }
 
-fn fill_all_shortest_paths(start: usize, end: usize, nodes: &Vec<Node>) -> usize {
+fn fill_all_shortest_paths(
+    start: usize,
+    end: usize,
+    nodes: &Vec<Node>,
+    connections: &Vec<Connection>,
+) -> usize {
     let mut costs = vec![usize::MAX; nodes.len()];
     let mut queue = BinaryHeap::new();
-    let mut visited: HashSet<(Point, Point)> = HashSet::default();
+    let mut visited: Vec<usize> = Vec::new();
 
     costs[start] = 0;
     queue.push(VisitState::new(start, 0, Direction::East, Vec::new()));
     let mut lowest_cost: Option<usize> = None;
 
-    while let Some(state) = queue.pop() {
+    while let Some(mut state) = queue.pop() {
         if state.id == end {
             if let Some(cost) = lowest_cost {
                 if cost < state.cost {
@@ -337,15 +367,7 @@ fn fill_all_shortest_paths(start: usize, end: usize, nodes: &Vec<Node>) -> usize
                 lowest_cost = Some(state.cost);
             }
 
-            for segments in state.visited.iter() {
-                for pair in segments.windows(2) {
-                    visited.insert(if pair[0] > pair[1] {
-                        (pair[0], pair[1])
-                    } else {
-                        (pair[1], pair[0])
-                    });
-                }
-            }
+            visited.append(&mut state.visited);
         }
 
         if costs[state.id] < state.cost {
@@ -353,43 +375,66 @@ fn fill_all_shortest_paths(start: usize, end: usize, nodes: &Vec<Node>) -> usize
         }
 
         for path in nodes[state.id].paths.iter() {
-            if path.start_direction == state.direction.reverse() {
+            let connection = &connections[*path];
+            let (from_direction, to_direction, to) = if connection.a_id == state.id {
+                (
+                    connection.a_direction,
+                    connection.b_direction.reverse(),
+                    connection.b_id,
+                )
+            } else {
+                (
+                    connection.b_direction,
+                    connection.a_direction.reverse(),
+                    connection.a_id,
+                )
+            };
+
+            if from_direction == state.direction.reverse() {
                 continue;
             }
 
-            let mut path_cost = state.cost + path.cost;
-            if path.start_direction != state.direction {
+            let mut path_cost = state.cost + connection.cost;
+            if from_direction != state.direction {
                 path_cost += 1000;
             }
 
-            if path_cost > costs[path.destination] {
+            if path_cost >= costs[to] {
                 continue;
             }
             costs[state.id] = path_cost;
+
             let mut visited = state.visited.clone();
-            visited.push(path.visited.clone());
-            queue.push(VisitState::new(
-                path.destination,
-                path_cost,
-                path.end_direction,
-                visited,
-            ));
+            visited.push(*path);
+
+            queue.push(VisitState::new(to, path_cost, to_direction, visited));
         }
     }
 
     let mut visited_edges = HashSet::default();
+    let mut visited_segments = HashSet::default();
 
     let mut result = 0;
-    for (from, to) in visited {
-        if !visited_edges.contains(&from) {
-            visited_edges.insert(from);
-            result += 1;
+    for id in visited {
+        let connection = &connections[id];
+        for segment in connection.visits.windows(2) {
+            let a = segment[0];
+            let b = segment[1];
+
+            let segment_id = if a > b { (a, b) } else { (b, a) };
+            if !visited_segments.contains(&segment_id) {
+                visited_segments.insert(segment_id);
+                if !visited_edges.contains(&a) {
+                    visited_edges.insert(a);
+                    result += 1;
+                }
+                if !visited_edges.contains(&b) {
+                    visited_edges.insert(b);
+                    result += 1;
+                }
+                result += a.distance_to(b) - 1;
+            }
         }
-        if !visited_edges.contains(&to) {
-            visited_edges.insert(to);
-            result += 1;
-        }
-        result += from.distance_to(to) - 1;
     }
 
     result
