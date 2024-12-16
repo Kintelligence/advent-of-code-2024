@@ -1,4 +1,8 @@
-use grid::{Directions, Grid, DIRECTIONS};
+use grid::Grid;
+use points::{
+    directions::{Direction, DIRECTIONS},
+    point::Point,
+};
 use shared::*;
 
 extern crate shared;
@@ -33,35 +37,33 @@ fn parse(input: &str) -> Grid<Letter> {
         }
     }
 
-    Grid::from_vec(vec, height)
+    Grid::from(vec, height)
 }
 
-fn test_1(map: &Grid<Letter>, x: usize, y: usize, direction: Directions) -> bool {
-    if let Some((x, y)) = map.go(x, y, direction) {
-        if *map.index(x, y) == Letter::M {
-            if let Some((x, y)) = map.go(x, y, direction) {
-                if *map.index(x, y) == Letter::A {
-                    if let Some((x, y)) = map.go(x, y, direction) {
-                        if *map.index(x, y) == Letter::S {
-                            return true;
-                        }
-                    }
-                }
+const LETTERS: [Letter; 3] = [Letter::M, Letter::A, Letter::S];
+
+fn test_1(map: &Grid<Letter>, point: Point, direction: Direction) -> bool {
+    let mut current = point;
+    for letter in LETTERS {
+        if let Some(next) = map.go(current, direction) {
+            if map[next] == letter {
+                current = next;
+                continue;
             }
         }
+        return false;
     }
-    return false;
+
+    true
 }
 
 fn solve_1(map: Grid<Letter>) -> usize {
     let mut count = 0;
-    for y in 0..map.height {
-        for x in 0..map.width {
-            if *map.index(x, y) == Letter::X {
-                for direction in DIRECTIONS {
-                    if test_1(&map, x, y, direction) {
-                        count += 1;
-                    }
+    for position in map.points() {
+        if map[position] == Letter::X {
+            for direction in DIRECTIONS {
+                if test_1(&map, position, direction) {
+                    count += 1;
                 }
             }
         }
@@ -91,16 +93,9 @@ mod part_1_tests {
     }
 }
 
-fn test_2(
-    map: &Grid<Letter>,
-    x: usize,
-    y: usize,
-    direction: Directions,
-    m: &mut bool,
-    s: &mut bool,
-) {
-    if let Some((x, y)) = map.go(x, y, direction) {
-        let letter = map.index(x, y);
+fn test_2(map: &Grid<Letter>, point: Point, direction: Direction, m: &mut bool, s: &mut bool) {
+    if let Some(point) = map.go(point, direction) {
+        let letter = &map[point];
         if *letter == Letter::M {
             *m = true;
         }
@@ -112,33 +107,31 @@ fn test_2(
 
 fn solve_2(map: Grid<Letter>) -> usize {
     let mut count = 0;
-    for y in 0..map.height {
-        for x in 0..map.width {
-            if *map.index(x, y) == Letter::A {
-                let mut m_1 = false;
-                let mut s_1 = false;
-                let mut m_2 = false;
-                let mut s_2 = false;
+    for point in map.points() {
+        if map[point] == Letter::A {
+            let mut m_1 = false;
+            let mut s_1 = false;
+            let mut m_2 = false;
+            let mut s_2 = false;
 
-                test_2(&map, x, y, Directions::NorthEast, &mut m_1, &mut s_1);
-                if !m_1 && !s_1 {
-                    continue;
-                }
-                test_2(&map, x, y, Directions::SouthWest, &mut m_1, &mut s_1);
-                if !m_1 || !s_1 {
-                    continue;
-                }
-                test_2(&map, x, y, Directions::NorthWest, &mut m_2, &mut s_2);
-                if !m_2 && !s_2 {
-                    continue;
-                }
-                test_2(&map, x, y, Directions::SouthEast, &mut m_2, &mut s_2);
-                if !m_2 || !s_2 {
-                    continue;
-                }
-
-                count += 1;
+            test_2(&map, point, Direction::NorthEast, &mut m_1, &mut s_1);
+            if !m_1 && !s_1 {
+                continue;
             }
+            test_2(&map, point, Direction::SouthWest, &mut m_1, &mut s_1);
+            if !m_1 || !s_1 {
+                continue;
+            }
+            test_2(&map, point, Direction::NorthWest, &mut m_2, &mut s_2);
+            if !m_2 && !s_2 {
+                continue;
+            }
+            test_2(&map, point, Direction::SouthEast, &mut m_2, &mut s_2);
+            if !m_2 || !s_2 {
+                continue;
+            }
+
+            count += 1;
         }
     }
 

@@ -1,12 +1,12 @@
-use point::Point;
-use point_grid::{Direction4, PointGrid};
+use grid::Grid;
+use points::{directions::Direction, point::Point};
 use shared::*;
 
 extern crate shared;
 
 pub const _INPUT: &'static str = include_str!("_input.txt");
 
-fn parse(input: &str) -> PointGrid<u8> {
+fn parse(input: &str) -> Grid<u8> {
     let mut vec = Vec::with_capacity(140 * 140);
     let mut height = 0;
 
@@ -18,12 +18,12 @@ fn parse(input: &str) -> PointGrid<u8> {
         height += 1;
     }
 
-    PointGrid::from_vec(vec, height)
+    Grid::from(vec, height)
 }
 
 struct State {
-    pub map: PointGrid<u8>,
-    pub visited: PointGrid<bool>,
+    pub map: Grid<u8>,
+    pub visited: Grid<bool>,
 }
 
 struct FenceScore {
@@ -42,7 +42,7 @@ where
 
     let mut state = State {
         map: grid,
-        visited: PointGrid::empty(false, height, width),
+        visited: Grid::filled(false, height, width),
     };
 
     let mut score = FenceScore {
@@ -53,7 +53,7 @@ where
 
     let mut result = 0;
 
-    for point in state.map.positions() {
+    for point in state.map.points() {
         if state.visited[point] {
             continue;
         }
@@ -82,7 +82,7 @@ fn initial_fill(point: Point, state: &mut State, score: &mut FenceScore) {
 
 fn fill<I>(iter: I, state: &mut State, score: &mut FenceScore)
 where
-    I: IntoIterator<Item = (Point, Direction4)>,
+    I: IntoIterator<Item = (Point, Direction)>,
 {
     score.current_area += 1;
     score.multiplier += 4;
@@ -95,7 +95,7 @@ where
             if !state.visited[neighbour] {
                 state.visited[neighbour] = true;
                 fill(
-                    state.map.adjacent_three_directional(neighbour, direction),
+                    state.map.adjacent_three_in_direction(neighbour, direction.reverse()),
                     state,
                     score,
                 );
@@ -133,7 +133,7 @@ fn initial_fill_discounted(point: Point, state: &mut State, score: &mut FenceSco
 
 fn fill_discounted<I>(iter: I, point: Point, state: &mut State, score: &mut FenceScore)
 where
-    I: IntoIterator<Item = (Point, Direction4)>,
+    I: IntoIterator<Item = (Point, Direction)>,
 {
     score.current_area += 1;
 
@@ -144,10 +144,11 @@ where
 
         if is_connected {
             match direction {
-                Direction4::North => connected &= 0b00011110,
-                Direction4::East => connected &= 0b00011101,
-                Direction4::South => connected &= 0b00011011,
-                Direction4::West => connected &= 0b00010111,
+                Direction::North => connected &= 0b00011110,
+                Direction::East => connected &= 0b00011101,
+                Direction::South => connected &= 0b00011011,
+                Direction::West => connected &= 0b00010111,
+                _ => {}
             }
 
             if !state.visited[neighbour] {

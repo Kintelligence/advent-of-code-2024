@@ -1,5 +1,5 @@
-use ipoint::IPoint;
 use parse::Parsable;
+use points::ipoint::IPoint;
 use shared::*;
 use std::iter::from_fn;
 

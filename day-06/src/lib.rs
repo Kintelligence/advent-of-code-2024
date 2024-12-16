@@ -3,8 +3,8 @@ use std::{
     usize,
 };
 
-use point::Point;
-use point_grid::{Direction4, PointGrid};
+use grid::Grid;
+use points::{directions::Direction, point::Point};
 use shared::*;
 
 extern crate shared;

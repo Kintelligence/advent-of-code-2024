@@ -1,8 +1,8 @@
 use fxhash::FxHashMap as HashMap;
 
-use ipoint::IPoint;
-use point::Point;
-use point_grid::PointGrid;
+use grid::Grid;
+use points::ipoint::IPoint;
+use points::point::Point;
 use shared::*;
 
 extern crate shared;
@@ -40,7 +40,7 @@ fn parse(input: &str) -> (Vec<Vec<IPoint>>, usize, usize) {
 
 pub fn part_1(_input: &str) -> Solution {
     let (sets, width, height) = parse(_input);
-    let mut map = PointGrid::from_vec(vec![false; width * height], height);
+    let mut map = Grid::from(vec![false; width * height], height);
     let mut antinodes: usize = 0;
 
     for set in sets {
@@ -51,7 +51,7 @@ pub fn part_1(_input: &str) -> Solution {
                 let other = set[n];
                 if let Some(offset) = current.checked_sub(other) {
                     if let Some(antinode) = other.checked_sub(offset) {
-                        if let Some(point) = Point::from(antinode) {
+                        if let Ok(point) = Point::try_from(antinode) {
                             if map.is_within_bounds(point) {
                                 if !map[point] {
                                     map.insert(point, true);
@@ -61,7 +61,7 @@ pub fn part_1(_input: &str) -> Solution {
                         }
                     }
                     if let Some(antinode) = current.checked_add(offset) {
-                        if let Some(point) = Point::from(antinode) {
+                        if let Ok(point) = Point::try_from(antinode) {
                             if map.is_within_bounds(point) {
                                 if !map[point] {
                                     map.insert(point, true);
@@ -96,13 +96,13 @@ mod part_1_tests {
 
 pub fn part_2(_input: &str) -> Solution {
     let (sets, width, height) = parse(_input);
-    let mut map = PointGrid::from_vec(vec![false; width * height], height);
+    let mut map = Grid::from(vec![false; width * height], height);
     let mut antinodes: usize = 0;
 
     for set in sets {
         for i in 0..(set.len() - 1) {
             let current = set[i];
-            if let Some(current_point) = Point::from(current) {
+            if let Ok(current_point) = Point::try_from(current) {
                 if !map[current_point] {
                     map.insert(current_point, true);
                     antinodes += 1;
@@ -111,7 +111,7 @@ pub fn part_2(_input: &str) -> Solution {
 
             for n in (i + 1)..set.len() {
                 let other = set[n];
-                if let Some(other_point) = Point::from(other) {
+                if let Ok(other_point) = Point::try_from(other) {
                     if !map[other_point] {
                         map.insert(other_point, true);
                         antinodes += 1;
@@ -122,7 +122,7 @@ pub fn part_2(_input: &str) -> Solution {
                     let mut point = current;
                     loop {
                         if let Some(antinode) = point.checked_add(offset) {
-                            if let Some(antinode_point) = Point::from(antinode) {
+                            if let Ok(antinode_point) = Point::try_from(antinode) {
                                 if map.is_within_bounds(antinode_point) {
                                     if !map[antinode_point] {
                                         map.insert(antinode_point, true);
@@ -138,7 +138,7 @@ pub fn part_2(_input: &str) -> Solution {
                     point = other;
                     loop {
                         if let Some(antinode) = point.checked_sub(offset) {
-                            if let Some(antinode_point) = Point::from(antinode) {
+                            if let Ok(antinode_point) = Point::try_from(antinode) {
                                 if map.is_within_bounds(antinode_point) {
                                     if !map[antinode_point] {
                                         map.insert(antinode_point, true);

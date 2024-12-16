@@ -1,6 +1,3 @@
-#![allow(incomplete_features)]
-#![feature(specialization)]
-
 use std::{
     fmt::{Display, Formatter},
     time::{Duration, Instant},
@@ -140,9 +137,9 @@ pub fn day_name(day: u32) -> &'static str {
         11 => "Plutonian Pebbles",
         12 => "Garden Groups",
         13 => "Claw Contraption",
-        14 => "Unnamed",
-        15 => "Unnamed",
-        16 => "Unnamed",
+        14 => "Restroom Redoubt",
+        15 => "Warehouse Woes",
+        16 => "Reindeer Maze",
         17 => "Unnamed",
         18 => "Unnamed",
         19 => "Unnamed",
@@ -154,12 +151,8 @@ pub fn day_name(day: u32) -> &'static str {
     }
 }
 
-pub mod common;
 pub mod grid;
-pub mod ipoint;
+pub mod math;
+pub mod misc;
 pub mod parse;
-pub mod point;
-pub mod point_grid;
-pub mod switching_state;
-pub mod translator;
-pub mod vector_3d;
+pub mod points;
