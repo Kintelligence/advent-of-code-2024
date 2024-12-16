@@ -11,7 +11,7 @@ use super::{
 };
 use forward_ref::{forward_ref_binop, forward_ref_op_assign};
 
-#[derive(Clone, Copy, PartialEq, Eq, Debug, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 pub struct Point {
     pub x: usize,
     pub y: usize,
@@ -31,6 +31,20 @@ impl TryFrom<IPoint> for Point {
             return Ok(Point::new(value.x as usize, value.y as usize));
         }
         Err("Unable to convert negative IPoint to Point")
+    }
+}
+
+impl Ord for Point {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.x.cmp(&other.x).then_with(|| self.y.cmp(&other.y))
+    }
+}
+
+impl PartialOrd for Point {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.x
+            .partial_cmp(&other.x)
+            .or_else(|| self.y.partial_cmp(&other.y))
     }
 }
 
@@ -126,6 +140,10 @@ impl Point {
         }
 
         None
+    }
+
+    pub fn distance_to(&self, rhs: Self) -> usize {
+        self.x.abs_diff(rhs.x) + self.y.abs_diff(rhs.y)
     }
 }
 

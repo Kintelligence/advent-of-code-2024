@@ -40,7 +40,7 @@ where
         for (point, from) in valid_points {
             result += traverse_1(
                 map,
-                map.adjacent_three_directional(point, from),
+                map.adjacent_three_in_direction(point, from.reverse()),
                 height + 1,
                 seen,
             );
@@ -98,7 +98,11 @@ where
     } else {
         valid_points
             .map(|(point, from)| {
-                traverse_2(map, map.adjacent_three_directional(point, from), height + 1)
+                traverse_2(
+                    map,
+                    map.adjacent_three_in_direction(point, from.reverse()),
+                    height + 1,
+                )
             })
             .sum()
     }

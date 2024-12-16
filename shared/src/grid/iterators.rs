@@ -135,7 +135,7 @@ impl Iterator for AdjacentFour {
     }
 }
 
-pub struct AdjacentThreeDirectional {
+pub struct AdjacentThreeInDirection {
     pub x: usize,
     pub y: usize,
     pub height: usize,
@@ -144,7 +144,7 @@ pub struct AdjacentThreeDirectional {
     pub direction: Direction,
 }
 
-impl Iterator for AdjacentThreeDirectional {
+impl Iterator for AdjacentThreeInDirection {
     type Item = (Point, Direction);
 
     fn next(&mut self) -> Option<Self::Item> {

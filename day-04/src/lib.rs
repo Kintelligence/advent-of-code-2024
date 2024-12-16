@@ -1,6 +1,6 @@
 use grid::Grid;
 use points::{
-    directions::{Direction, DIRECTIONS8},
+    directions::{Direction, DIRECTIONS},
     point::Point,
 };
 use shared::*;
@@ -61,7 +61,7 @@ fn solve_1(map: Grid<Letter>) -> usize {
     let mut count = 0;
     for position in map.points() {
         if map[position] == Letter::X {
-            for direction in DIRECTIONS8 {
+            for direction in DIRECTIONS {
                 if test_1(&map, position, direction) {
                     count += 1;
                 }

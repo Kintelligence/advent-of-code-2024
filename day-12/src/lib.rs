@@ -95,7 +95,7 @@ where
             if !state.visited[neighbour] {
                 state.visited[neighbour] = true;
                 fill(
-                    state.map.adjacent_three_directional(neighbour, direction),
+                    state.map.adjacent_three_in_direction(neighbour, direction.reverse()),
                     state,
                     score,
                 );

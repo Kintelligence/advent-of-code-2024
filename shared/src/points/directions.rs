@@ -1,13 +1,13 @@
 use core::fmt;
 
-pub const DIRECTIONS4: [Direction; 4] = [
+pub const CARDINALS: [Direction; 4] = [
     Direction::North,
     Direction::East,
     Direction::South,
     Direction::West,
 ];
 
-pub const DIRECTIONS8: [Direction; 8] = [
+pub const DIRECTIONS: [Direction; 8] = [
     Direction::North,
     Direction::NorthEast,
     Direction::East,
@@ -49,7 +49,29 @@ impl std::fmt::Display for Direction {
     }
 }
 
+pub const CARDINALS_EXCEPT_NORTH: [Direction; 3] =
+    [Direction::East, Direction::South, Direction::West];
+
+pub const CARDINALS_EXCEPT_EAST: [Direction; 3] =
+    [Direction::North, Direction::South, Direction::West];
+
+pub const CARDINALS_EXCEPT_SOUTH: [Direction; 3] =
+    [Direction::North, Direction::East, Direction::West];
+
+pub const CARDINALS_EXCEPT_WEST: [Direction; 3] =
+    [Direction::North, Direction::East, Direction::South];
+
 impl Direction {
+    pub fn other_cardinals(&self) -> [Direction; 3] {
+        match self {
+            Direction::North => CARDINALS_EXCEPT_NORTH,
+            Direction::East => CARDINALS_EXCEPT_EAST,
+            Direction::South => CARDINALS_EXCEPT_SOUTH,
+            Direction::West => CARDINALS_EXCEPT_WEST,
+            _ => panic!("Not allowed on ordinals"),
+        }
+    }
+
     pub fn rotate_clockwise_90(&self) -> Self {
         match self {
             Direction::North => Self::East,

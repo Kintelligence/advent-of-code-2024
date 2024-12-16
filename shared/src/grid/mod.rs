@@ -261,18 +261,18 @@ impl<T> Grid<T> {
         }
     }
 
-    pub fn adjacent_three_directional(
+    pub fn adjacent_three_in_direction(
         &self,
         point: Point,
         from: Direction,
-    ) -> AdjacentThreeDirectional {
-        AdjacentThreeDirectional {
+    ) -> AdjacentThreeInDirection {
+        AdjacentThreeInDirection {
             x: point.x,
             y: point.y,
             height: self.height,
             width: self.width,
             current: 0,
-            direction: from,
+            direction: from.reverse(),
         }
     }
 
@@ -316,15 +316,52 @@ impl<T> std::ops::IndexMut<(usize, usize)> for Grid<T> {
 }
 
 impl Grid<u8> {
-    pub fn print_u8(&self) -> String {
+    pub fn print_u8(&self, unit_width: usize) -> String {
         let mut str = String::new();
         for y in 0..self.height {
+            str.push_str(&format!("{:3} ", y % 1000));
             for x in 0..self.width {
-                str.push_str(format!("{:2} ", self[(x, y)]).as_str());
+                str.push_str(&format!("{:width$?} ", &self[(x, y)], width = unit_width,));
             }
-
             str.push('\n');
         }
+        str.push_str("    ");
+        for x in 0..self.width {
+            str.push_str(&format!(
+                "{:<width$} ",
+                x % (10usize.pow(unit_width as u32)),
+                width = unit_width,
+            ));
+        }
+
+        str.push('\n');
+        str
+    }
+}
+
+impl Grid<Option<u8>> {
+    pub fn print_option_u8(&self, unit_width: usize) -> String {
+        let mut str = String::new();
+        for y in 0..self.height {
+            str.push_str(&format!("{:3} ", y % 1000));
+            for x in 0..self.width {
+                if let Some(value) = &self[(x, y)] {
+                    str.push_str(&format!("{:<width$} ", value, width = unit_width,));
+                } else {
+                    str.push_str(&format!("{:width$} ", '.', width = unit_width,));
+                }
+            }
+            str.push('\n');
+        }
+        str.push_str("    ");
+        for x in 0..self.width {
+            str.push_str(&format!(
+                "{:<width$} ",
+                x % (10usize.pow(unit_width as u32)),
+                width = unit_width,
+            ));
+        }
+
         str.push('\n');
         str
     }
@@ -334,14 +371,33 @@ impl Grid<bool> {
     pub fn print_bool(&self) -> String {
         let mut str = String::new();
         for y in 0..self.height {
+            str.push_str(&format!("{:3} ", y % 1000));
             for x in 0..self.width {
                 str.push_str(if self[Point::new(x, y)] { "■ " } else { ". " });
             }
-
             str.push('\n');
         }
+        str.push_str("    ");
+        for x in 0..self.width {
+            str.push_str(&format!("{:} ", x % 10));
+        }
+
         str.push('\n');
         str
+    }
+
+    pub fn go_if_true(&self, point: Point, direction: Direction) -> Option<Point> {
+        (match direction {
+            Direction::North => self.up(point),
+            Direction::NorthEast => self.up_right(point),
+            Direction::East => self.right(point),
+            Direction::SouthEast => self.down_right(point),
+            Direction::South => self.down(point),
+            Direction::SouthWest => self.down_left(point),
+            Direction::West => self.left(point),
+            Direction::NorthWest => self.up_left(point),
+        })
+        .and_then(|p| if self[p] { Some(p) } else { None })
     }
 }
 
@@ -349,14 +405,24 @@ impl<T> Grid<T>
 where
     T: std::fmt::Debug,
 {
-    pub fn print_debug(&self) -> String {
+    pub fn print_debug(&self, unit_width: usize) -> String {
         let mut str = String::new();
-        for i in 0..self.height {
+        for y in 0..self.height {
+            str.push_str(&format!("{:3} ", y % 1000));
             for x in 0..self.width {
-                str.push_str(&format!("{:?} ", &self[(x, i)]));
+                str.push_str(&format!("{:width$?} ", &self[(x, y)], width = unit_width,));
             }
             str.push('\n');
         }
+        str.push_str("    ");
+        for x in 0..self.width {
+            str.push_str(&format!(
+                "{:<width$} ",
+                x % (10usize.pow(unit_width as u32)),
+                width = unit_width,
+            ));
+        }
+
         str.push('\n');
         str
     }
