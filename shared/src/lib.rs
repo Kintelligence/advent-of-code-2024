@@ -1,6 +1,3 @@
-#![allow(incomplete_features)]
-#![feature(specialization)]
-
 use std::{
     fmt::{Display, Formatter},
     time::{Duration, Instant},
@@ -141,7 +138,7 @@ pub fn day_name(day: u32) -> &'static str {
         12 => "Garden Groups",
         13 => "Claw Contraption",
         14 => "Restroom Redoubt",
-        15 => "Unnamed",
+        15 => "Warehouse Woes",
         16 => "Unnamed",
         17 => "Unnamed",
         18 => "Unnamed",

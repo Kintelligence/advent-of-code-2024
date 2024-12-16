@@ -1,5 +1,5 @@
-use grid::{directions::Direction, Grid};
-use points::point::Point;
+use grid::Grid;
+use points::{directions::Direction, point::Point};
 use shared::*;
 
 extern crate shared;

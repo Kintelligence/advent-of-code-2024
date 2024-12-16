@@ -114,6 +114,28 @@ impl Direction {
             Direction::NorthWest => Self::SouthEast,
         }
     }
+
+    pub fn is_vertical(&self) -> bool {
+        return *self == Direction::North || *self == Direction::South;
+    }
+
+    pub fn is_horizontal(&self) -> bool {
+        return *self == Direction::East || *self == Direction::West;
+    }
+
+    pub fn is_cardinal(&self) -> bool {
+        return *self == Direction::East
+            || *self == Direction::West
+            || *self == Direction::North
+            || *self == Direction::South;
+    }
+
+    pub fn is_ordinal(&self) -> bool {
+        return *self == Direction::NorthEast
+            || *self == Direction::SouthEast
+            || *self == Direction::SouthWest
+            || *self == Direction::NorthWest;
+    }
 }
 
 impl From<Direction> for usize {

@@ -1,9 +1,6 @@
-use core::fmt;
-
-use directions::*;
 use iterators::*;
 
-use crate::points::point::Point;
+use crate::points::{directions::Direction, point::Point};
 
 #[derive(Clone, Debug)]
 pub struct Grid<T> {
@@ -318,22 +315,8 @@ impl<T> std::ops::IndexMut<(usize, usize)> for Grid<T> {
     }
 }
 
-default impl<T: std::fmt::Debug> std::fmt::Display for Grid<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut str = String::new();
-        for i in 0..self.height {
-            str.push_str(&format!("{:?}", &self.row(i)));
-            if i != self.height - 1 {
-                str.push_str(", ");
-            }
-            str.push('\n');
-        }
-        write!(f, "{}", str)
-    }
-}
-
-impl std::fmt::Display for Grid<u8> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl Grid<u8> {
+    pub fn print_u8(&self) -> String {
         let mut str = String::new();
         for y in 0..self.height {
             for x in 0..self.width {
@@ -343,12 +326,12 @@ impl std::fmt::Display for Grid<u8> {
             str.push('\n');
         }
         str.push('\n');
-        write!(f, "{}", str)
+        str
     }
 }
 
-impl std::fmt::Display for Grid<bool> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl Grid<bool> {
+    pub fn print_bool(&self) -> String {
         let mut str = String::new();
         for y in 0..self.height {
             for x in 0..self.width {
@@ -358,9 +341,25 @@ impl std::fmt::Display for Grid<bool> {
             str.push('\n');
         }
         str.push('\n');
-        write!(f, "{}", str)
+        str
     }
 }
 
-pub mod directions;
+impl<T> Grid<T>
+where
+    T: std::fmt::Debug,
+{
+    pub fn print_debug(&self) -> String {
+        let mut str = String::new();
+        for i in 0..self.height {
+            for x in 0..self.width {
+                str.push_str(&format!("{:?} ", &self[(x, i)]));
+            }
+            str.push('\n');
+        }
+        str.push('\n');
+        str
+    }
+}
+
 pub mod iterators;

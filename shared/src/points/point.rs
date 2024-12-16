@@ -6,6 +6,7 @@ use std::{
 
 use super::{
     super::points::ipoint::IPoint,
+    directions::Direction,
     traits::{Modulo, ModuloAssign},
 };
 use forward_ref::{forward_ref_binop, forward_ref_op_assign};
@@ -34,6 +35,75 @@ impl TryFrom<IPoint> for Point {
 }
 
 impl Point {
+    pub fn right(&self) -> Self {
+        Self {
+            x: self.x + 1,
+            y: self.y,
+        }
+    }
+
+    pub fn left(&self) -> Self {
+        Self {
+            x: self.x - 1,
+            y: self.y,
+        }
+    }
+
+    pub fn up(&self) -> Self {
+        Self {
+            x: self.x,
+            y: self.y - 1,
+        }
+    }
+
+    pub fn down(&self) -> Self {
+        Self {
+            x: self.x,
+            y: self.y + 1,
+        }
+    }
+
+    fn up_right(&self) -> Point {
+        Self {
+            x: self.x + 1,
+            y: self.y - 1,
+        }
+    }
+
+    fn down_right(&self) -> Point {
+        Self {
+            x: self.x + 1,
+            y: self.y + 1,
+        }
+    }
+
+    fn down_left(&self) -> Point {
+        Self {
+            x: self.x - 1,
+            y: self.y + 1,
+        }
+    }
+
+    fn up_left(&self) -> Point {
+        Self {
+            x: self.x - 1,
+            y: self.y - 1,
+        }
+    }
+
+    pub fn go(&self, direction: Direction) -> Self {
+        match direction {
+            Direction::North => self.up(),
+            Direction::NorthEast => self.up_right(),
+            Direction::East => self.right(),
+            Direction::SouthEast => self.down_right(),
+            Direction::South => self.down(),
+            Direction::SouthWest => self.down_left(),
+            Direction::West => self.left(),
+            Direction::NorthWest => self.up_left(),
+        }
+    }
+
     pub fn new(x: usize, y: usize) -> Self {
         Point { x, y }
     }

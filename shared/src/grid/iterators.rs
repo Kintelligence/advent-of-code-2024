@@ -1,6 +1,4 @@
-use crate::points::point::Point;
-
-use super::directions::Direction;
+use crate::points::{directions::Direction, point::Point};
 
 pub const DIAGONAL: [(isize, isize); 4] = [(-1, 1), (1, -1), (1, 1), (-1, -1)];
 
