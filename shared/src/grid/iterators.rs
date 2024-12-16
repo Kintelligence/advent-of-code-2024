@@ -153,7 +153,7 @@ impl Iterator for AdjacentThreeInDirection {
                 return None;
             }
 
-            self.direction = self.direction.rotate_clockwise_90();
+            self.direction = self.direction.rotate_90();
             let nx = self.x as isize + ADJ_FOUR[self.direction as usize].0;
             let ny = self.y as isize + ADJ_FOUR[self.direction as usize].1;
 

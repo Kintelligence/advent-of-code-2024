@@ -1,28 +1,13 @@
-use fxhash::FxHashSet as HashSet;
 use grid::Grid;
-use misc::translator::Translator;
-use points::{directions::Direction, point::Point};
+use points::{
+    directions::{Direction, CARDINALS},
+    point::Point,
+};
 use shared::*;
-use std::collections::BinaryHeap;
 
 extern crate shared;
 
 pub const _INPUT: &'static str = include_str!("_input.txt");
-
-#[derive(Debug)]
-struct Node {
-    paths: Vec<usize>,
-}
-
-#[derive(Debug)]
-struct Connection {
-    a_direction: Direction,
-    b_direction: Direction,
-    a_id: usize,
-    b_id: usize,
-    cost: usize,
-    length: usize,
-}
 
 fn parse(input: &str) -> (Grid<bool>, Point, Point) {
     let mut vec = Vec::new();
@@ -53,247 +38,37 @@ fn parse(input: &str) -> (Grid<bool>, Point, Point) {
     return (Grid::from(vec, y), start, end);
 }
 
-fn graph(
-    map: &Grid<bool>,
-    point: Point,
-    id: usize,
-    current_direction: Direction,
-    visited: &mut Vec<bool>,
-    translator: &mut Translator<Point>,
-    nodes: &mut Vec<Node>,
-    connections: &mut Vec<Connection>,
-    start_position: Point,
-    end_position: Point,
-) {
-    if visited[id] {
-        return;
-    }
+pub fn part_1(_input: &str) -> Solution {
+    let (map, start, end) = parse(_input);
+    let mut costs = map.same_size_with([usize::MAX; 4]);
+    let mut buckets: Vec<Vec<(Point, Direction, usize)>> = vec![Vec::new(); 1001];
+    let mut bucket = 0;
+    buckets[0].push((start, Direction::East, 0));
+    costs[start][Direction::East as usize] = 0;
 
-    visited[id] = true;
-
-    for travel_direction in current_direction.reverse().other_cardinals() {
-        if nodes[id].paths.iter().any(|path| {
-            let connection = &connections[*path];
-            if connection.a_id == id {
-                return connection.a_direction == travel_direction;
-            }
-            return connection.b_direction == travel_direction;
-        }) {
-            continue;
-        }
-        if let Some((next, cost, next_direction, length)) =
-            travel_to_next_junction(map, point, travel_direction, start_position, end_position)
-        {
-            if next == point {
-                continue;
+    loop {
+        while let Some((point, direction, cost)) = buckets[bucket % 1001].pop() {
+            if point == end {
+                return cost.into();
             }
 
-            let next_id = translator.translate(next);
-            let next_connection_id = connections.len();
+            let options = [
+                (map.go_if_true(point, direction), direction, cost + 1),
+                (Some(point), direction.rotate_counter_90(), cost + 1000),
+                (Some(point), direction.rotate_90(), cost + 1000),
+            ];
 
-            connections.push(Connection {
-                a_direction: travel_direction,
-                a_id: id,
-                b_direction: next_direction.reverse(),
-                b_id: next_id,
-                cost,
-                length,
-            });
-
-            nodes[id].paths.push(next_connection_id);
-
-            if nodes.len() == next_id {
-                nodes.push(Node {
-                    paths: vec![next_connection_id],
-                });
-            } else {
-                nodes[next_id].paths.push(next_connection_id);
-            }
-
-            graph(
-                map,
-                next,
-                next_id,
-                next_direction,
-                visited,
-                translator,
-                nodes,
-                connections,
-                start_position,
-                end_position,
-            );
-        }
-    }
-}
-
-fn travel_to_next_junction(
-    map: &Grid<bool>,
-    mut current_point: Point,
-    mut current_direction: Direction,
-    start_position: Point,
-    end_position: Point,
-) -> Option<(Point, usize, Direction, usize)> {
-    let mut cost = 0;
-    let mut points = 0;
-    if let Some(next) = map.go_if_true(current_point, current_direction) {
-        current_point = next;
-        loop {
-            if current_point == start_position || current_point == end_position {
-                return Some((current_point, cost + 1, current_direction, points));
-            }
-
-            let mut next: Option<(Point, Direction)> = None;
-            for next_direction in current_direction.reverse().other_cardinals() {
-                if let Some(next_point) = map.go_if_true(current_point, next_direction) {
-                    if next.is_none() {
-                        next = Some((next_point, next_direction));
-                    } else {
-                        return Some((current_point, cost + 1, current_direction, points));
+            for (point_option, direction, cost) in options {
+                if let Some(point) = point_option {
+                    if cost < costs[point][direction as usize] {
+                        costs[point][direction as usize] = cost;
+                        buckets[cost % 1001].push((point, direction, cost));
                     }
                 }
             }
-
-            if let Some((next_point, next_direction)) = next {
-                cost += 1;
-                if current_direction != next_direction {
-                    cost += 1000;
-                }
-                points += 1;
-                current_point = next_point;
-                current_direction = next_direction;
-            } else {
-                return None;
-            }
         }
+        bucket += 1;
     }
-    None
-}
-
-fn parse_and_graph(input: &str) -> (usize, usize, Vec<Node>, Vec<Connection>) {
-    let (map, start_point, end_point) = parse(input);
-    let mut translator = Translator::new();
-    let mut visited = vec![false; map.height * map.width];
-    let start = translator.translate(start_point);
-    let start_node = Node { paths: Vec::new() };
-
-    let mut nodes = vec![start_node];
-    let mut connections = Vec::new();
-
-    graph(
-        &map,
-        start_point,
-        start,
-        Direction::East,
-        &mut visited,
-        &mut translator,
-        &mut nodes,
-        &mut connections,
-        start_point,
-        end_point,
-    );
-
-    //println!("{}", map.print_bool());
-
-    let mut map: Grid<Option<u8>> = map.same_size_with(None);
-    for (&point, &node) in translator.map.iter() {
-        map[point] = Some(node as u8);
-    }
-
-    //println!("{}", map.print_option_u8(1));
-
-    let end = translator.translate(end_point);
-    (start, end, nodes, connections)
-}
-
-pub fn part_1(_input: &str) -> Solution {
-    let (start, end, nodes, connections) = parse_and_graph(_input);
-    find_shortest_path(start, end, &nodes, &connections).into()
-}
-
-#[derive(PartialEq, Eq)]
-struct State {
-    id: usize,
-    cost: usize,
-    direction: Direction,
-}
-
-impl State {
-    pub fn new(id: usize, cost: usize, direction: Direction) -> Self {
-        State {
-            id,
-            cost,
-            direction,
-        }
-    }
-}
-
-impl PartialOrd for State {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        other.cost.partial_cmp(&self.cost)
-    }
-}
-
-impl Ord for State {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.cost.cmp(&self.cost)
-    }
-}
-
-fn find_shortest_path(
-    start: usize,
-    end: usize,
-    nodes: &Vec<Node>,
-    connections: &Vec<Connection>,
-) -> usize {
-    let mut costs = vec![usize::MAX; nodes.len()];
-    let mut queue = BinaryHeap::new();
-
-    costs[start] = 0;
-    queue.push(State::new(start, 0, Direction::East));
-
-    while let Some(state) = queue.pop() {
-        if state.id == end {
-            return state.cost;
-        }
-
-        if costs[state.id] < state.cost {
-            continue;
-        }
-
-        for path in nodes[state.id].paths.iter() {
-            let connection = &connections[*path];
-            let (from_direction, to_direction, to) = if connection.a_id == state.id {
-                (
-                    connection.a_direction,
-                    connection.b_direction.reverse(),
-                    connection.b_id,
-                )
-            } else {
-                (
-                    connection.b_direction,
-                    connection.a_direction.reverse(),
-                    connection.a_id,
-                )
-            };
-
-            if from_direction == state.direction.reverse() {
-                continue;
-            }
-
-            let mut path_cost = state.cost + connection.cost;
-            if from_direction != state.direction {
-                path_cost += 1000;
-            }
-
-            if path_cost >= costs[to] {
-                continue;
-            }
-            costs[state.id] = path_cost;
-            queue.push(State::new(to, path_cost, to_direction));
-        }
-    }
-
-    usize::MAX
 }
 
 #[cfg(test)]
@@ -314,136 +89,81 @@ mod part_1_tests {
 }
 
 pub fn part_2(_input: &str) -> Solution {
-    let (start, end, nodes, connections) = parse_and_graph(_input);
-    fill_all_shortest_paths(start, end, &nodes, &connections).into()
-}
-
-#[derive(Debug, PartialEq, Eq)]
-struct VisitState {
-    cost: usize,
-    id: usize,
-    direction: Direction,
-    visited: Vec<usize>,
-}
-
-impl VisitState {
-    pub fn new(id: usize, cost: usize, direction: Direction, visited: Vec<usize>) -> Self {
-        Self {
-            id,
-            cost,
-            direction,
-            visited,
-        }
-    }
-}
-
-impl Ord for VisitState {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.cost.cmp(&self.cost)
-    }
-}
-
-impl PartialOrd for VisitState {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        other.cost.partial_cmp(&self.cost)
-    }
-}
-
-fn fill_all_shortest_paths(
-    start: usize,
-    end: usize,
-    nodes: &Vec<Node>,
-    connections: &Vec<Connection>,
-) -> usize {
-    let mut costs = vec![[usize::MAX; 4]; nodes.len()];
-    let mut queue = BinaryHeap::new();
-    let mut visited: Vec<usize> = Vec::new();
-
+    let (map, start, end) = parse(_input);
+    let mut costs = map.same_size_with([usize::MAX; 4]);
+    let mut buckets: Vec<Vec<(Point, Direction, usize)>> = vec![Vec::new(); 1001];
+    let mut bucket = 0;
+    buckets[0].push((start, Direction::East, 0));
     costs[start][Direction::East as usize] = 0;
-    queue.push(VisitState::new(start, 0, Direction::East, Vec::new()));
-    let mut lowest_cost: Option<usize> = None;
+    let mut lowest: Option<usize> = None;
 
-    while let Some(mut state) = queue.pop() {
-        if let Some(cost) = lowest_cost {
-            if state.cost > cost {
-                break;
-            }
-        }
-
-        if state.id == end {
-            if let Some(cost) = lowest_cost {
-                if cost < state.cost {
-                    break;
+    'traversal: loop {
+        while let Some((point, direction, cost)) = buckets[bucket % 1001].pop() {
+            if point == end {
+                if let Some(lowest) = lowest {
+                    if cost > lowest {
+                        break 'traversal;
+                    }
+                } else {
+                    lowest = Some(cost);
                 }
-            } else {
-                lowest_cost = Some(state.cost);
             }
 
-            visited.append(&mut state.visited);
+            let options = [
+                (map.go_if_true(point, direction), direction, cost + 1),
+                (Some(point), direction.rotate_counter_90(), cost + 1000),
+                (Some(point), direction.rotate_90(), cost + 1000),
+            ];
+
+            for (point_option, direction, cost) in options {
+                if let Some(point) = point_option {
+                    if cost < costs[point][direction as usize] {
+                        costs[point][direction as usize] = cost;
+                        buckets[cost % 1001].push((point, direction, cost));
+                    }
+                }
+            }
+        }
+        bucket += 1;
+    }
+
+    let mut visited = map.same_size_with(false);
+    visited[end] = true;
+    if let Some(lowest) = lowest {
+        let mut queue: Vec<(Point, Direction, usize)> = Vec::new();
+        for direction in CARDINALS {
+            if costs[end][direction as usize] == lowest {
+                queue.push((end, direction, lowest));
+            }
         }
 
-        if costs[state.id][state.direction as usize] < state.cost {
-            continue;
-        }
-
-        for path in nodes[state.id].paths.iter() {
-            let connection = &connections[*path];
-            let (from_direction, to_direction, to) = if connection.a_id == state.id {
+        while let Some((point, from_direction, remaining)) = queue.pop() {
+            let options = [
                 (
-                    connection.a_direction,
-                    connection.b_direction.reverse(),
-                    connection.b_id,
-                )
-            } else {
+                    map.go_if_true(point, from_direction.reverse()),
+                    from_direction,
+                    remaining - 1,
+                ),
                 (
-                    connection.b_direction,
-                    connection.a_direction.reverse(),
-                    connection.a_id,
-                )
-            };
+                    Some(point),
+                    from_direction.rotate_counter_90(),
+                    remaining - 1000,
+                ),
+                (Some(point), from_direction.rotate_90(), remaining - 1000),
+            ];
 
-            if from_direction == state.direction.reverse() {
-                continue;
+            for (point_option, from_direction, remaining) in options {
+                if let Some(point) = point_option {
+                    if costs[point][from_direction as usize] == remaining {
+                        visited[point] = true;
+                        queue.push((point, from_direction, remaining));
+                    }
+                }
             }
-
-            let mut path_cost = state.cost + connection.cost;
-            if from_direction != state.direction {
-                path_cost += 1000;
-            }
-
-            if path_cost >= costs[to][to_direction as usize] {
-                continue;
-            }
-            costs[state.id][to_direction as usize] = path_cost;
-
-            let mut visited = state.visited.clone();
-            visited.push(*path);
-
-            queue.push(VisitState::new(to, path_cost, to_direction, visited));
         }
     }
 
-    let mut visited_nodes = HashSet::default();
-    let mut visited_connections = HashSet::default();
-
-    let mut result = 0;
-    for id in visited {
-        let connection = &connections[id];
-        if !visited_connections.contains(&id) {
-            visited_connections.insert(id);
-            result += connection.length;
-        }
-
-        if !visited_nodes.contains(&connection.a_id) {
-            visited_nodes.insert(connection.a_id);
-            result += 1;
-        }
-        if !visited_nodes.contains(&connection.b_id) {
-            visited_nodes.insert(connection.b_id);
-            result += 1;
-        }
-    }
-    result
+    visited.vec.iter().filter(|&p| *p).count().into()
 }
 
 #[cfg(test)]

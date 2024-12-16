@@ -49,7 +49,7 @@ fn solve_1(map: Grid<Tile>, start: Point) -> usize {
 
     while let Some(next) = map.go(current, direction) {
         if map[next] == Tile::Obstacle {
-            direction = direction.rotate_clockwise_90();
+            direction = direction.rotate_90();
             continue;
         } else if !visited[next] {
             visited[next] = true;
@@ -92,18 +92,18 @@ fn solve_2(map: Grid<Tile>, start: Point) -> usize {
 
     while let Some(next) = map.go(current, direction) {
         if map[next] == Tile::Obstacle {
-            direction = direction.rotate_clockwise_90();
+            direction = direction.rotate_90();
             continue;
         }
 
         if visited[next].iter().all(|seen| !seen) {
             let mut visited_b = Grid::from(vec![[false; 4]; map.width * map.height], map.height);
-            let mut direction_b = direction.rotate_clockwise_90();
+            let mut direction_b = direction.rotate_90();
             let mut current_b = current;
 
             while let Some(next_b) = map.go(current_b, direction_b) {
                 if map[next_b] == Tile::Obstacle || next_b == next {
-                    direction_b = direction_b.rotate_clockwise_90();
+                    direction_b = direction_b.rotate_90();
                     continue;
                 } else if visited[next_b][direction_b as usize]
                     || visited_b[next_b][direction_b as usize]

@@ -72,7 +72,7 @@ impl Direction {
         }
     }
 
-    pub fn rotate_clockwise_90(&self) -> Self {
+    pub fn rotate_90(&self) -> Self {
         match self {
             Direction::North => Self::East,
             Direction::East => Self::South,
@@ -85,7 +85,7 @@ impl Direction {
         }
     }
 
-    pub fn rotate_counterclockwise_90(&self) -> Self {
+    pub fn rotate_counter_90(&self) -> Self {
         match self {
             Direction::North => Self::West,
             Direction::East => Self::North,
