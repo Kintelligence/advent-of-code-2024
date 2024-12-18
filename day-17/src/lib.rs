@@ -1,4 +1,4 @@
-use std::{iter::from_fn, result};
+use std::iter::from_fn;
 
 use parse::Parsable;
 use shared::*;

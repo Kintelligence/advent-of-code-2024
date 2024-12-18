@@ -326,6 +326,30 @@ impl<T> std::ops::IndexMut<(usize, usize)> for Grid<T> {
     }
 }
 
+impl Grid<usize> {
+    pub fn print_usize(&self, unit_width: usize) -> String {
+        let mut str = String::new();
+        for y in 0..self.height {
+            str.push_str(&format!("{:3} ", y % 1000));
+            for x in 0..self.width {
+                str.push_str(&format!("{:width$?} ", &self[(x, y)], width = unit_width,));
+            }
+            str.push('\n');
+        }
+        str.push_str("    ");
+        for x in 0..self.width {
+            str.push_str(&format!(
+                "{:<width$} ",
+                x % (10usize.pow(unit_width as u32)),
+                width = unit_width,
+            ));
+        }
+
+        str.push('\n');
+        str
+    }
+}
+
 impl Grid<u8> {
     pub fn print_u8(&self, unit_width: usize) -> String {
         let mut str = String::new();
@@ -333,6 +357,34 @@ impl Grid<u8> {
             str.push_str(&format!("{:3} ", y % 1000));
             for x in 0..self.width {
                 str.push_str(&format!("{:width$?} ", &self[(x, y)], width = unit_width,));
+            }
+            str.push('\n');
+        }
+        str.push_str("    ");
+        for x in 0..self.width {
+            str.push_str(&format!(
+                "{:<width$} ",
+                x % (10usize.pow(unit_width as u32)),
+                width = unit_width,
+            ));
+        }
+
+        str.push('\n');
+        str
+    }
+}
+
+impl Grid<Option<usize>> {
+    pub fn print_option_usize(&self, unit_width: usize) -> String {
+        let mut str = String::new();
+        for y in 0..self.height {
+            str.push_str(&format!("{:3} ", y % 1000));
+            for x in 0..self.width {
+                if let Some(value) = &self[(x, y)] {
+                    str.push_str(&format!("{:<width$} ", value, width = unit_width,));
+                } else {
+                    str.push_str(&format!("{:width$} ", '.', width = unit_width,));
+                }
             }
             str.push('\n');
         }

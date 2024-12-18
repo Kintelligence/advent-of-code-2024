@@ -18,6 +18,7 @@ pub enum Solution {
     U128(u128),
     Usize(usize),
     Str(String),
+    Point(Point),
     None,
 }
 
@@ -37,6 +38,7 @@ impl Display for Solution {
             Self::U128(x) => x.fmt(f),
             Self::Usize(x) => x.fmt(f),
             Self::Str(x) => x.fmt(f),
+            Self::Point(x) => x.fmt(f),
             Self::None => panic!("Cannot format NOTHING!"),
         }
     }
@@ -65,6 +67,7 @@ impl_from!(u64, U64);
 impl_from!(u128, U128);
 impl_from!(usize, Usize);
 impl_from!(String, Str);
+impl_from!(Point, Point);
 
 impl From<&str> for Solution {
     fn from(sol: &str) -> Self {
@@ -79,6 +82,7 @@ impl<T> From<Option<T>> for Solution {
 }
 
 use colored::Colorize;
+use points::point::Point;
 
 pub fn execute(f: &dyn Fn(&str) -> Solution, input: &str, day: &str, name: &str) -> Duration {
     let start = Instant::now();
@@ -141,7 +145,7 @@ pub fn day_name(day: u32) -> &'static str {
         15 => "Warehouse Woes",
         16 => "Reindeer Maze",
         17 => "Chronospatial Computer",
-        18 => "Unnamed",
+        18 => "RAM Run",
         19 => "Unnamed",
         20 => "Unnamed",
         21 => "Unnamed",
