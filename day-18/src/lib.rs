@@ -1,4 +1,4 @@
-use std::{collections::BinaryHeap, iter::from_fn, usize};
+use std::iter::from_fn;
 
 use grid::Grid;
 use parse::Parsable;
@@ -85,106 +85,42 @@ mod part_1_tests {
     }
 }
 
-#[derive(Eq, PartialEq)]
-struct State {
-    point: Point,
-    distance: usize,
-}
-
-impl State {
-    pub fn new(point: Point, distance: usize) -> Self {
-        Self { point, distance }
-    }
-}
-
-impl Ord for State {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        other.distance.cmp(&self.distance)
-    }
-}
-
-impl PartialOrd for State {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        other.distance.partial_cmp(&self.distance)
-    }
-}
-
-fn is_traversable(
-    map: &mut Grid<bool>,
-    visited: &mut Grid<bool>,
-    queue: &mut BinaryHeap<State>,
-    bytes: &Vec<Point>,
-    count: usize,
-    max_x: usize,
-    max_y: usize,
-) -> bool {
-    map.vec.fill(false);
-    visited.vec.fill(false);
-    queue.clear();
-
-    for byte in bytes.iter().take(count) {
-        map[*byte] = true;
+fn fill(point: Point, visited: &mut Grid<bool>, map: &Grid<bool>) -> bool {
+    visited[point] = true;
+    if point.x == 0 && point.y == 0 {
+        return true;
     }
 
-    let start = Point::new(0, 0);
-    let goal = Point::new(max_x, max_y);
-
-    visited[start] = true;
-    queue.push(State::new(start, usize::MAX));
-
-    while let Some(state) = queue.pop() {
-        if state.point == goal {
-            return true;
-        }
-
-        for next in map.adjacent_four(state.point) {
-            if !map[next] {
-                if visited[next] {
-                    continue;
-                }
-
-                queue.push(State::new(next, next.distance_to(goal)));
-                visited[next] = true;
+    for next in map.adjacent_four(point) {
+        if !map[next] && !visited[next] {
+            if fill(next, visited, map) {
+                return true;
             }
         }
     }
 
-    false
+    return false;
 }
 
 fn solve_2(input: &str, max_x: usize, max_y: usize) -> Solution {
     let bytes = parse(input);
     let mut map = Grid::filled(false, max_y + 1, max_x + 1);
     let mut visited = map.same_size_with(false);
-    let mut queue = BinaryHeap::new();
+    for b in bytes.iter() {
+        map[*b] = true;
+    }
 
-    let mut min = 0;
-    let mut max = bytes.len() - 1;
+    fill(Point::new(max_x, max_y), &mut visited, &map);
 
-    loop {
-        let x = (min + max) / 2;
-        if is_traversable(&mut map, &mut visited, &mut queue, &bytes, x, max_x, max_y) {
-            min = x + 1;
-        } else {
-            max = x - 1;
-        }
+    for i in (0..bytes.len() - 1).rev() {
+        let point = bytes[i];
+        map[point] = false;
 
-        if max == min {
-            if is_traversable(
-                &mut map,
-                &mut visited,
-                &mut queue,
-                &bytes,
-                max,
-                max_x,
-                max_y,
-            ) {
-                return bytes[max].into();
-            } else {
-                return bytes[max - 1].into();
-            }
+        if map.adjacent_four(point).any(|n| visited[n]) && fill(point, &mut visited, &map) {
+            return bytes[i].into();
         }
     }
+    Solution::None
 }
 
 pub fn part_2(_input: &str) -> Solution {
