@@ -1,4 +1,4 @@
-use std::iter::from_fn;
+use std::{iter::from_fn, result};
 
 use parse::Parsable;
 use shared::*;
@@ -39,7 +39,6 @@ fn run(a: &mut usize, b: &mut usize, c: &mut usize, program: &Vec<usize>) -> Str
                     instruction_pointer = literal;
                     continue;
                 }
-                println!("No JUMP")
             }
             4 => *b = xor(&b, *c),
             5 => output.push(modulo(combo_operand(literal, *a, *b, *c))),
@@ -130,282 +129,34 @@ mod part_1_tests {
 
 pub fn part_2(_input: &str) -> Solution {
     let (_, _, _, program) = parse(_input);
-    if let Some(a) = reverse(
-        program.len() - 4,
-        program.len() - 1,
-        &program,
-        0,
-        0,
-        None,
-        &mut 0,
-        &mut (program.len() - 4),
-        &mut (program.len() - 1),
-    ) {
-        return a.into();
+    if let Some(result) = solve(0, program[3], program[7], &program, program.len() - 1, 0) {
+        return result.into();
     }
     Solution::None
 }
 
-fn reverse(
-    p_index: usize,
-    o_index: usize,
-    program: &Vec<usize>,
+fn solve(
     a: usize,
-    b: usize,
-    c_option: Option<usize>,
-    count: &mut usize,
-    min_o: &mut usize,
-    min_p: &mut usize,
+    x: usize,
+    y: usize,
+    output: &Vec<usize>,
+    index: usize,
+    end: usize,
 ) -> Option<usize> {
-    if o_index == 0 && p_index == 0 {
-        return Some(a);
-    }
-    *count += 1;
+    let mut results = Vec::new();
 
-    let instruction = program[p_index];
-    let literal = program[p_index + 1];
-
-    if o_index < *min_o {
-        *min_o = o_index;
-    }
-
-    if o_index == *min_o {
-        if p_index < *min_p {
-            *min_p = p_index;
-        }
-
-        if p_index == *min_p {
-            println!(
-                "P:{} => {}@{}, O:{}, A:{}, B:{}, C:{:?}",
-                p_index, instruction, literal, o_index, a, b, c_option
-            );
-        }
-    }
-
-    if instruction == 0 {
-        if literal < 4 {
-            for i in 0..0b1 << literal {
-                if let Some(result) = if p_index == 0 {
-                    reverse(
-                        program.len() - 2,
-                        o_index - 1,
-                        program,
-                        (a << literal) | i,
-                        b,
-                        c_option,
-                        count,
-                        min_o,
-                        min_p,
-                    )
-                } else {
-                    reverse(
-                        p_index - 2,
-                        o_index,
-                        program,
-                        (a << literal) | i,
-                        b,
-                        c_option,
-                        count,
-                        min_o,
-                        min_p,
-                    )
-                } {
-                    return Some(result);
-                }
+    for b in 0..8 {
+        let a = a << 3 | b;
+        if b ^ x ^ y ^ (a >> (b ^ x)) & 0b111 == output[index] {
+            if index == end {
+                results.push(a);
+            } else if let Some(result) = solve(a, x, y, output, index - 1, end) {
+                results.push(result);
             }
-            return None;
-        } else {
-            panic!("No support for reversing division by ADV register")
         }
     }
 
-    if instruction == 1 {
-        return reverse(
-            p_index - 2,
-            o_index,
-            program,
-            a,
-            b ^ literal,
-            c_option,
-            count,
-            min_o,
-            min_p,
-        );
-    }
-
-    if instruction == 2 {
-        let combo = match literal {
-            0..=3 => literal,
-            4 => a,
-            5 => b,
-            _ => panic!("Unsupported combo for CDV"),
-        };
-
-        if b != combo & 0b111 {
-            return None;
-        }
-
-        if p_index == 0 {
-            return reverse(
-                program.len() - 2,
-                o_index - 1,
-                program,
-                a,
-                program[o_index - 1],
-                c_option,
-                count,
-                min_o,
-                min_p,
-            );
-        } else {
-            return reverse(
-                program.len() - 2,
-                o_index - 1,
-                program,
-                a,
-                program[o_index - 1],
-                c_option,
-                count,
-                min_o,
-                min_p,
-            );
-        }
-    }
-
-    if instruction == 3 {
-        if literal != 0 {
-            panic!("Unsupported literal for jump");
-        }
-
-        if a == 0 {
-            return None;
-        }
-
-        return reverse(
-            p_index - 2,
-            o_index,
-            program,
-            a,
-            b,
-            c_option,
-            count,
-            min_o,
-            min_p,
-        );
-    }
-
-    if instruction == 4 {
-        if let Some(c) = c_option {
-            return reverse(
-                p_index - 2,
-                o_index,
-                program,
-                a,
-                b ^ c,
-                c_option,
-                count,
-                min_o,
-                min_p,
-            );
-        } else {
-            let depth = (program.len() - 1 - o_index) + 1;
-            for new_b in 0..=(depth * 3) {
-                if let Some(result) = reverse(
-                    p_index - 2,
-                    o_index,
-                    program,
-                    a,
-                    new_b,
-                    Some(b ^ new_b),
-                    count,
-                    min_o,
-                    min_p,
-                ) {
-                    return Some(result);
-                }
-            }
-            return None;
-        }
-    }
-
-    if instruction == 5 {
-        if literal == 4 {
-            if a & 0b111 != program[o_index] {
-                println!(
-                    "Expected {} but found {} in {}",
-                    program[o_index],
-                    a & 0b111,
-                    a
-                );
-                return None;
-            }
-            return reverse(
-                p_index - 2,
-                o_index,
-                program,
-                a,
-                b,
-                c_option,
-                count,
-                min_o,
-                min_p,
-            );
-        } else if literal == 5 {
-            if b & 0b111 != program[o_index] {
-                println!(
-                    "Expected {} but found {} in {}",
-                    program[o_index],
-                    b & 0b111,
-                    b
-                );
-                return None;
-            }
-            return reverse(
-                p_index - 2,
-                o_index,
-                program,
-                a,
-                b,
-                c_option,
-                count,
-                min_o,
-                min_p,
-            );
-        } else {
-            panic!("No support for reversing output for this literal");
-        }
-    }
-
-    if instruction == 7 {
-        if let Some(c) = c_option {
-            let combo = match literal {
-                0..=3 => literal,
-                4 => a,
-                5 => b,
-                _ => panic!("Unsupported combo for CDV"),
-            };
-
-            if c != a.checked_shr(combo as u32).unwrap_or(0) {
-                return None;
-            }
-
-            return reverse(
-                p_index - 2,
-                o_index,
-                program,
-                a,
-                b,
-                None,
-                count,
-                min_o,
-                min_p,
-            );
-        } else {
-            panic!("Unset C is not supported for CDV instruction");
-        }
-    }
-
-    panic!("No matching instruction");
+    results.iter().min().copied()
 }
 
 #[cfg(test)]
