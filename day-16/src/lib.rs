@@ -110,13 +110,13 @@ pub fn part_2(_input: &str) -> Solution {
             }
 
             let options = [
-                (map.go_if_true(point, direction), direction, cost + 1),
-                (Some(point), direction.rotate_counter_90(), cost + 1000),
-                (Some(point), direction.rotate_90(), cost + 1000),
+                (point.go(direction), direction, cost + 1),
+                (point, direction.rotate_counter_90(), cost + 1000),
+                (point, direction.rotate_90(), cost + 1000),
             ];
 
-            for (point_option, direction, cost) in options {
-                if let Some(point) = point_option {
+            for (point, direction, cost) in options {
+                if map[point] {
                     if cost < costs[point][direction as usize] {
                         costs[point][direction as usize] = cost;
                         buckets[cost % 1001].push((point, direction, cost));
@@ -137,26 +137,18 @@ pub fn part_2(_input: &str) -> Solution {
             }
         }
 
-        while let Some((point, from_direction, remaining)) = queue.pop() {
+        while let Some((point, direction, remaining)) = queue.pop() {
             let options = [
-                (
-                    map.go_if_true(point, from_direction.reverse()),
-                    from_direction,
-                    remaining - 1,
-                ),
-                (
-                    Some(point),
-                    from_direction.rotate_counter_90(),
-                    remaining - 1000,
-                ),
-                (Some(point), from_direction.rotate_90(), remaining - 1000),
+                (point.go(direction.reverse()), direction, remaining - 1),
+                (point, direction.rotate_counter_90(), remaining - 1000),
+                (point, direction.rotate_90(), remaining - 1000),
             ];
 
-            for (point_option, from_direction, remaining) in options {
-                if let Some(point) = point_option {
-                    if costs[point][from_direction as usize] == remaining {
+            for (point, direction, remaining) in options {
+                if map[point] {
+                    if costs[point][direction as usize] == remaining {
                         visited[point] = true;
-                        queue.push((point, from_direction, remaining));
+                        queue.push((point, direction, remaining));
                     }
                 }
             }
