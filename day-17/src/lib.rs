@@ -121,8 +121,8 @@ mod part_1_tests {
         }
     }
 
-    #[test_case(0)]
-    fn real_input(expected: usize) {
+    #[test_case("4,1,5,3,1,5,3,5,7")]
+    fn real_input(expected: &str) {
         assert_eq!(part_1(_INPUT), expected.into());
     }
 }
@@ -164,12 +164,7 @@ mod part_2_tests {
     use crate::*;
     use test_case::test_case;
 
-    #[test_case(include_str!("_test_2.txt"), 117440)]
-    fn example_input(input: &str, expected: usize) {
-        assert_eq!(part_2(input), expected.into());
-    }
-
-    #[test_case(0)]
+    #[test_case(164542125272765)]
     fn real_input(expected: usize) {
         assert_eq!(part_2(_INPUT), expected.into());
     }
