@@ -944,6 +944,7 @@ dependencies = [
  "colored",
  "forward_ref",
  "fxhash",
+ "test-case",
 ]
 
 [[package]]

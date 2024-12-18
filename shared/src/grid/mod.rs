@@ -1,6 +1,6 @@
 use iterators::*;
 
-use crate::points::{directions::Direction, point::Point};
+use crate::points::{directions::Direction, iline::ILine, ipoint::IPoint, point::Point};
 
 #[derive(Clone, Debug)]
 pub struct Grid<T> {
@@ -18,6 +18,15 @@ where
             vec: vec![fill; height * width],
             width,
             height,
+        }
+    }
+
+    pub fn fill_line(&mut self, line: &ILine, fill: T) {
+        for point in line.points() {
+            println!("Filling {}", point);
+            if let Ok(point) = Point::try_from(point) {
+                self[point] = fill.clone();
+            }
         }
     }
 }

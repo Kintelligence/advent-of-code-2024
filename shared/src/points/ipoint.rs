@@ -56,6 +56,10 @@ impl IPoint {
 
         None
     }
+
+    pub fn distance_to(&self, rhs: Self) -> usize {
+        self.x.abs_diff(rhs.x) + self.y.abs_diff(rhs.y)
+    }
 }
 
 impl Add for IPoint {
