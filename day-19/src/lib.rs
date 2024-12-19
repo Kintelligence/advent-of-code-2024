@@ -8,16 +8,14 @@ pub const _INPUT: &'static str = include_str!("_input.txt");
 
 #[derive(Clone, Debug)]
 struct Node {
-    colour: char,
     end: bool,
     root: bool,
     children: Vec<Option<Node>>,
 }
 
 impl Node {
-    pub fn new(colour: char) -> Self {
+    pub fn new() -> Self {
         Self {
-            colour,
             children: vec![None; 5],
             end: false,
             root: false,
@@ -26,28 +24,12 @@ impl Node {
 }
 
 fn parse_pattern<T: Iterator<Item = u8>>(bytes: &mut T, current: &mut Node) {
-    if let Some(byte) = bytes.next() {
-        if !byte.is_ascii_alphabetic() {
-            if !current.root {
-                current.end = true;
-            }
-            return;
+    if let Some(i) = parse_colour(bytes) {
+        if current.children[i as usize].is_none() {
+            current.children[i as usize] = Some(Node::new());
         }
 
-        let i = match byte {
-            b'w' => 0,
-            b'u' => 1,
-            b'b' => 2,
-            b'r' => 3,
-            b'g' => 4,
-            _ => panic!("Unexpected input"),
-        };
-
-        if current.children[i].is_none() {
-            current.children[i] = Some(Node::new(byte as char));
-        }
-
-        if let Some(child) = &mut current.children.index_mut(i) {
+        if let Some(child) = &mut current.children.index_mut(i as usize) {
             parse_pattern(bytes, child);
         }
     } else {
@@ -60,14 +42,14 @@ fn parse_pattern<T: Iterator<Item = u8>>(bytes: &mut T, current: &mut Node) {
 fn parse_colour<T: Iterator<Item = u8>>(bytes: &mut T) -> Option<u8> {
     if let Some(b) = bytes.next() {
         if b.is_ascii_alphabetic() {
-            return Some(match b {
-                b'w' => 0,
-                b'u' => 1,
-                b'b' => 2,
-                b'r' => 3,
-                b'g' => 4,
-                _ => panic!("Unexpected towel color"),
-            });
+            return match b {
+                b'w' => Some(0),
+                b'u' => Some(1),
+                b'b' => Some(2),
+                b'r' => Some(3),
+                b'g' => Some(4),
+                _ => None,
+            };
         }
     }
     None
@@ -76,7 +58,7 @@ fn parse_colour<T: Iterator<Item = u8>>(bytes: &mut T) -> Option<u8> {
 fn parse(input: &str) -> (Node, Vec<Vec<u8>>) {
     let mut lines = input.lines();
 
-    let mut root = Node::new('o');
+    let mut root = Node::new();
     root.root = true;
 
     let mut bytes = lines.next().unwrap().bytes();
