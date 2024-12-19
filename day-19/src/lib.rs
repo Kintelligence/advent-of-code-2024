@@ -1,4 +1,4 @@
-use std::iter::from_fn;
+use std::{iter::from_fn, ops::IndexMut};
 
 use shared::*;
 
@@ -6,24 +6,87 @@ extern crate shared;
 
 pub const _INPUT: &'static str = include_str!("_input.txt");
 
-fn parse(input: &str) -> (Vec<usize>, Vec<Vec<u8>>) {
+#[derive(Clone, Debug)]
+struct Node {
+    colour: char,
+    end: bool,
+    root: bool,
+    children: Vec<Option<Node>>,
+}
+
+impl Node {
+    pub fn new(colour: char) -> Self {
+        Self {
+            colour,
+            children: vec![None; 5],
+            end: false,
+            root: false,
+        }
+    }
+}
+
+fn parse_pattern<T: Iterator<Item = u8>>(bytes: &mut T, current: &mut Node) {
+    if let Some(byte) = bytes.next() {
+        if !byte.is_ascii_alphabetic() {
+            if !current.root {
+                current.end = true;
+            }
+            return;
+        }
+
+        let i = match byte {
+            b'w' => 0,
+            b'u' => 1,
+            b'b' => 2,
+            b'r' => 3,
+            b'g' => 4,
+            _ => panic!("Unexpected input"),
+        };
+
+        if current.children[i].is_none() {
+            current.children[i] = Some(Node::new(byte as char));
+        }
+
+        if let Some(child) = &mut current.children.index_mut(i) {
+            parse_pattern(bytes, child);
+        }
+    } else {
+        if !current.root {
+            current.end = true;
+        }
+    }
+}
+
+fn parse_colour<T: Iterator<Item = u8>>(bytes: &mut T) -> Option<u8> {
+    if let Some(b) = bytes.next() {
+        if b.is_ascii_alphabetic() {
+            return Some(match b {
+                b'w' => 0,
+                b'u' => 1,
+                b'b' => 2,
+                b'r' => 3,
+                b'g' => 4,
+                _ => panic!("Unexpected towel color"),
+            });
+        }
+    }
+    None
+}
+
+fn parse(input: &str) -> (Node, Vec<Vec<u8>>) {
     let mut lines = input.lines();
 
-    let mut bytes = lines.next().unwrap().bytes();
+    let mut root = Node::new('o');
+    root.root = true;
 
-    let patterns = from_fn(|| {
-        let mut t: usize = 0;
-        while let Some(c) = parse_colour(&mut bytes) {
-            t = (t << 3) | c as usize;
+    let mut bytes = lines.next().unwrap().bytes();
+    loop {
+        parse_pattern(&mut bytes, &mut root);
+        if let Some(_) = bytes.next() {
+            continue;
         }
-        if t == 0 {
-            None
-        } else {
-            bytes.next();
-            Some(t)
-        }
-    })
-    .collect();
+        break;
+    }
 
     lines.next();
 
@@ -39,90 +102,48 @@ fn parse(input: &str) -> (Vec<usize>, Vec<Vec<u8>>) {
     })
     .collect();
 
-    (patterns, designs)
+    (root, designs)
 }
 
-fn parse_colour<T: Iterator<Item = u8>>(bytes: &mut T) -> Option<u8> {
-    if let Some(b) = bytes.next() {
-        if b.is_ascii_alphabetic() {
-            return Some(match b {
-                b'w' => 1,
-                b'u' => 2,
-                b'b' => 3,
-                b'r' => 4,
-                b'g' => 5,
-                _ => panic!("Unexpected towel color"),
-            });
-        }
-    }
-    None
-}
-
-fn extract(design: &Vec<u8>, offset: usize, length: usize) -> Option<usize> {
-    if offset + length > design.len() {
-        return None;
-    }
-    let mut r = 0;
-    for i in 0..length {
-        r = r << 3 | design[offset + i] as usize;
-    }
-    Some(r)
-}
-
-fn try_solve(
+fn solve_1(
+    root: &Node,
+    current: Option<&Node>,
     design: &Vec<u8>,
-    patterns: &Vec<Vec<usize>>,
-    offset: usize,
+    index: usize,
     cache: &mut Vec<bool>,
 ) -> bool {
-    if offset == design.len() {
-        return true;
-    }
-
-    if cache[offset] == true {
+    if index >= design.len() {
         return false;
     }
 
-    for i in 0..patterns.len() {
-        if let Some(segment) = extract(design, offset, i + 1) {
-            for &pattern in patterns[i].iter() {
-                if segment == pattern {
-                    if try_solve(design, patterns, offset + i + 1, cache) {
-                        return true;
-                    }
-                }
+    if current.is_none() && cache[index] {
+        return false;
+    }
+
+    if let Some(child) = &current.unwrap_or(root).children[design[index] as usize] {
+        if child.end {
+            if index == design.len() - 1 {
+                return true;
             }
+            return solve_1(root, Some(&child), design, index + 1, cache)
+                || solve_1(root, None, design, index + 1, cache);
         } else {
-            break;
+            return solve_1(root, Some(&child), design, index + 1, cache);
         }
     }
 
-    cache[offset] = true;
+    if current.is_none() {
+        cache[index] = true;
+    }
 
     false
 }
 
 pub fn part_1(_input: &str) -> Solution {
-    let (patterns, designs) = parse(_input);
-    let mut grouped_patterns = vec![Vec::new(); 10];
-
-    for pattern in patterns {
-        let i = usize::BITS - pattern.leading_zeros();
-        let n = (i as f64 / 3f64).ceil() as usize;
-        grouped_patterns[n - 1].push(pattern);
-    }
-
-    for i in (0..10).rev() {
-        if grouped_patterns[i].is_empty() {
-            grouped_patterns.remove(i);
-        } else {
-            break;
-        }
-    }
-
+    let (root, designs) = parse(_input);
     designs
         .iter()
-        .map(|d| try_solve(&d, &grouped_patterns, 0, &mut vec![false; d.len()]))
+        .map(|d| solve_1(&root, None, d, 0, &mut vec![false; d.len()]))
         .filter(|&b| b)
         .count()
         .into()
@@ -144,58 +165,49 @@ mod part_1_tests {
     }
 }
 
-fn try_solve_2(
+fn solve_2(
+    root: &Node,
+    current: Option<&Node>,
     design: &Vec<u8>,
-    patterns: &Vec<Vec<usize>>,
-    offset: usize,
+    index: usize,
     cache: &mut Vec<Option<usize>>,
 ) -> usize {
-    if offset == design.len() {
-        return 1;
+    if index >= design.len() {
+        return 0;
     }
 
-    if let Some(r) = cache[offset] {
-        return r;
-    }
-
-    let mut count = 0;
-    for i in 0..patterns.len() {
-        if let Some(segment) = extract(design, offset, i + 1) {
-            for &pattern in patterns[i].iter() {
-                if segment == pattern {
-                    count += try_solve_2(design, patterns, offset + i + 1, cache);
-                }
-            }
-        } else {
-            break;
+    if current.is_none() {
+        if let Some(cache_result) = cache[index] {
+            return cache_result;
         }
     }
 
-    cache[offset] = Some(count);
-    count
+    let mut result = 0;
+    if let Some(child) = &current.unwrap_or(root).children[design[index] as usize] {
+        if child.end {
+            if index == design.len() - 1 {
+                result = 1;
+            } else {
+                result = solve_2(root, Some(&child), design, index + 1, cache)
+                    + solve_2(root, None, design, index + 1, cache);
+            }
+        } else {
+            result = solve_2(root, Some(&child), design, index + 1, cache);
+        }
+    }
+
+    if current.is_none() {
+        cache[index] = Some(result);
+    }
+
+    result
 }
 
 pub fn part_2(_input: &str) -> Solution {
-    let (patterns, designs) = parse(_input);
-    let mut grouped_patterns = vec![Vec::new(); 10];
-
-    for pattern in patterns {
-        let i = usize::BITS - pattern.leading_zeros();
-        let n = (i as f64 / 3f64).ceil() as usize;
-        grouped_patterns[n - 1].push(pattern);
-    }
-
-    for i in (0..10).rev() {
-        if grouped_patterns[i].is_empty() {
-            grouped_patterns.remove(i);
-        } else {
-            break;
-        }
-    }
-
+    let (root, designs) = parse(_input);
     designs
         .iter()
-        .map(|d| try_solve_2(&d, &grouped_patterns, 0, &mut vec![None; d.len()]))
+        .map(|d| solve_2(&root, None, d, 0, &mut vec![None; d.len()]))
         .sum::<usize>()
         .into()
 }
