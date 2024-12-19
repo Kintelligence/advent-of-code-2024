@@ -9,7 +9,6 @@ pub const _INPUT: &'static str = include_str!("_input.txt");
 #[derive(Clone, Debug)]
 struct Node {
     end: bool,
-    root: bool,
     children: Vec<Option<Node>>,
 }
 
@@ -18,7 +17,6 @@ impl Node {
         Self {
             children: vec![None; 5],
             end: false,
-            root: false,
         }
     }
 }
@@ -33,9 +31,7 @@ fn parse_pattern<T: Iterator<Item = u8>>(bytes: &mut T, current: &mut Node) {
             parse_pattern(bytes, child);
         }
     } else {
-        if !current.root {
-            current.end = true;
-        }
+        current.end = true;
     }
 }
 
@@ -59,7 +55,6 @@ fn parse(input: &str) -> (Node, Vec<Vec<u8>>) {
     let mut lines = input.lines();
 
     let mut root = Node::new();
-    root.root = true;
 
     let mut bytes = lines.next().unwrap().bytes();
     loop {
