@@ -1,6 +1,6 @@
 use iterators::*;
 
-use crate::points::{directions::Direction, iline::ILine, ipoint::IPoint, point::Point};
+use crate::points::{directions::Direction, iline::ILine, point::Point};
 
 #[derive(Clone, Debug)]
 pub struct Grid<T> {

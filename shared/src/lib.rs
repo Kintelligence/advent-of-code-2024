@@ -146,7 +146,7 @@ pub fn day_name(day: u32) -> &'static str {
         16 => "Reindeer Maze",
         17 => "Chronospatial Computer",
         18 => "RAM Run",
-        19 => "Unnamed",
+        19 => "Linen Layout",
         20 => "Unnamed",
         21 => "Unnamed",
         22 => "Unnamed",
