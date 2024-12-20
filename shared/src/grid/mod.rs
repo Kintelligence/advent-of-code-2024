@@ -305,6 +305,24 @@ impl<T> Grid<T> {
             current: 0,
         }
     }
+
+    pub fn points_in_range(&self, point: Point, range: usize) -> Vec<Point> {
+        let mut vec = Vec::new();
+
+        let range: isize = range as isize;
+
+        for x_d in -range..=range {
+            for y_d in (x_d.abs() - range)..=(range - x_d.abs()) {
+                let x = point.x as isize + x_d;
+                let y = point.y as isize + y_d;
+                if x >= 0 && x < self.width as isize && y >= 0 && y < self.height as isize {
+                    vec.push(Point::new(x as usize, y as usize));
+                }
+            }
+        }
+        vec.remove(vec.len() / 2);
+        vec
+    }
 }
 
 impl<T> std::ops::Index<Point> for Grid<T> {
