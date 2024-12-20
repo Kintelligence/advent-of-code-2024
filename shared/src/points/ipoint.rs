@@ -61,14 +61,15 @@ impl IPoint {
         self.x.abs_diff(rhs.x) + self.y.abs_diff(rhs.y)
     }
 
-    pub fn offset_points(&self, range: isize) -> OffsetPointsIter {
+    pub fn offset_points(&self, from: isize, to: isize) -> OffsetPointsIter {
         OffsetPointsIter {
             current: 0,
             x: self.x,
             y: self.y,
-            inv_offset: range,
+            inv_offset: from,
             offset: 0,
-            range,
+            range: from,
+            last_range: to,
         }
     }
 }
@@ -77,6 +78,7 @@ pub struct OffsetPointsIter {
     pub x: isize,
     pub y: isize,
     pub range: isize,
+    pub last_range: isize,
     pub current: usize,
     pub offset: isize,
     pub inv_offset: isize,
@@ -93,8 +95,15 @@ impl Iterator for OffsetPointsIter {
         }
 
         if self.offset == self.range {
+            self.range += 1;
+            self.offset = 0;
+            self.inv_offset = self.range;
+        }
+
+        if self.range == self.last_range {
             return None;
         }
+
         self.current += 1;
         Some(match self.current {
             1 => IPoint::new(self.x + self.offset, self.y + self.inv_offset),

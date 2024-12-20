@@ -87,13 +87,10 @@ fn cheat(
             if point == *end {
                 return result;
             }
-            for offset in 2..=range {
-                for dest in ipoint.offset_points(offset) {
-                    if let Some(dest_cost) = costs.checked_index(dest).and_then(|&o| o) {
-                        if dest_cost > cost && dest_cost - cost >= limit + ipoint.distance_to(dest)
-                        {
-                            result += 1;
-                        }
+            for dest in ipoint.offset_points(2, range) {
+                if let Some(dest_cost) = costs.checked_index(dest).and_then(|&o| o) {
+                    if dest_cost > cost && dest_cost - cost >= limit + ipoint.distance_to(dest) {
+                        result += 1;
                     }
                 }
             }
