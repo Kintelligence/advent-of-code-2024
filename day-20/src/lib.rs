@@ -1,5 +1,5 @@
 use grid::Grid;
-use points::{directions::Direction, point::Point};
+use points::{directions::Direction, ipoint::IPoint, point::Point};
 use shared::*;
 
 extern crate shared;
@@ -70,10 +70,11 @@ fn cheat(
     mut point: Point,
     end: &Point,
     limit: usize,
-    range: usize,
+    range: isize,
 ) -> usize {
     let mut result = 0;
     let mut direction = Direction::North;
+    let mut ipoint: IPoint = point.into();
     for (n, d) in costs.adjacent_four_directional(point) {
         if let Some(_) = costs[n] {
             direction = d;
@@ -86,10 +87,13 @@ fn cheat(
             if point == *end {
                 return result;
             }
-            for dest in costs.points_in_range(point, range) {
-                if let Some(dest_cost) = costs[dest] {
-                    if dest_cost > cost && dest_cost - cost >= limit + point.distance_to(dest) {
-                        result += 1;
+            for offset in 2..=range {
+                for dest in ipoint.offset_points(offset) {
+                    if let Some(dest_cost) = costs.checked_index(dest).and_then(|&o| o) {
+                        if dest_cost > cost && dest_cost - cost >= limit + ipoint.distance_to(dest)
+                        {
+                            result += 1;
+                        }
                     }
                 }
             }
@@ -98,6 +102,7 @@ fn cheat(
                     direction = d;
                     cost = n_cost;
                     point = n;
+                    ipoint = point.into();
                 }
             }
         }
@@ -106,7 +111,7 @@ fn cheat(
     result
 }
 
-fn solve(input: &str, limit: usize, range: usize) -> Solution {
+fn solve(input: &str, limit: usize, range: isize) -> Solution {
     let (map, start, end) = parse(input);
     let mut costs = map.same_size_with(None);
 

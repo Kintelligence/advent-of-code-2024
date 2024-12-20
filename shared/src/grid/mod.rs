@@ -1,6 +1,8 @@
+use std::ops::Index;
+
 use iterators::*;
 
-use crate::points::{directions::Direction, iline::ILine, point::Point};
+use crate::points::{directions::Direction, iline::ILine, ipoint::IPoint, point::Point};
 
 #[derive(Clone, Debug)]
 pub struct Grid<T> {
@@ -75,8 +77,17 @@ impl<T> Grid<T> {
         &mut self.vec[self.width * y + x]
     }
 
-    pub fn is_within_bounds(&mut self, point: Point) -> bool {
+    pub fn is_within_bounds(&self, point: Point) -> bool {
         return point.x < self.width && point.y < self.height;
+    }
+
+    pub fn checked_index(&self, point: IPoint) -> Option<&T> {
+        if let Ok(point) = Point::try_from(point) {
+            if self.is_within_bounds(point) {
+                return Some(self.index(point));
+            }
+        }
+        None
     }
 
     pub fn insert(&mut self, point: Point, value: T) -> bool {
@@ -304,24 +315,6 @@ impl<T> Grid<T> {
             width: self.width,
             current: 0,
         }
-    }
-
-    pub fn points_in_range(&self, point: Point, range: usize) -> Vec<Point> {
-        let mut vec = Vec::new();
-
-        let range: isize = range as isize;
-
-        for x_d in -range..=range {
-            for y_d in (x_d.abs() - range)..=(range - x_d.abs()) {
-                let x = point.x as isize + x_d;
-                let y = point.y as isize + y_d;
-                if x >= 0 && x < self.width as isize && y >= 0 && y < self.height as isize {
-                    vec.push(Point::new(x as usize, y as usize));
-                }
-            }
-        }
-        vec.remove(vec.len() / 2);
-        vec
     }
 }
 

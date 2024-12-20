@@ -60,6 +60,50 @@ impl IPoint {
     pub fn distance_to(&self, rhs: Self) -> usize {
         self.x.abs_diff(rhs.x) + self.y.abs_diff(rhs.y)
     }
+
+    pub fn offset_points(&self, range: isize) -> OffsetPointsIter {
+        OffsetPointsIter {
+            current: 0,
+            x: self.x,
+            y: self.y,
+            inv_offset: range,
+            offset: 0,
+            range,
+        }
+    }
+}
+
+pub struct OffsetPointsIter {
+    pub x: isize,
+    pub y: isize,
+    pub range: isize,
+    pub current: usize,
+    pub offset: isize,
+    pub inv_offset: isize,
+}
+
+impl Iterator for OffsetPointsIter {
+    type Item = IPoint;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.current == 4 {
+            self.current = 0;
+            self.offset += 1;
+            self.inv_offset -= 1;
+        }
+
+        if self.offset == self.range {
+            return None;
+        }
+        self.current += 1;
+        Some(match self.current {
+            1 => IPoint::new(self.x + self.offset, self.y + self.inv_offset),
+            2 => IPoint::new(self.x + self.inv_offset, self.y - self.offset),
+            3 => IPoint::new(self.x - self.offset, self.y - self.inv_offset),
+            4 => IPoint::new(self.x - self.inv_offset, self.y + self.offset),
+            _ => panic!("Unreachable code reached"),
+        })
+    }
 }
 
 impl Add for IPoint {

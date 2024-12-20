@@ -31,7 +31,7 @@ fn solve_1(input: &str, max_x: usize, max_y: usize, count: usize) -> Solution {
     let start = Point::new(0, 0);
     let goal = Point::new(max_x, max_y);
     let mut costs: Grid<usize> = map.same_size_with(usize::MAX);
-    let mut buckets = vec![Vec::new(); SIZE1];
+    let mut buckets = vec![Vec::with_capacity(1000); SIZE1];
     let mut bucket = 0;
     let mut remaining = 1;
 
